@@ -52,9 +52,15 @@ class Main:
 
         def movify(filmBut):
 
+            def movPick(movFileButton):
+                movPicker = gtk.FileChooserDialog(title="Choose a save location", parent=movDia, action=gtk.FILE_CHOOSER_ACTION_SAVE, buttons=(("Save Here", -6)), backend=None)
+                movRes = movPicker.run()
+                if movRes == -6:
+                    movPath = movPicker.get_filename()
+                    movPicker.destroy()
+
             def movGen(movButton):
 
-                movPath = movEntry.get_text()
                 movDia.destroy()
 
                 filmPipe = gst.Pipeline("filmPipe")
@@ -80,21 +86,19 @@ class Main:
                 filmBut.set_sensitive(True)
 
             movDia = gtk.Window(gtk.WINDOW_TOPLEVEL)
+            movDia.set_title("Create Film")
+            movDia.set_resizable(False)
             filmBut.set_sensitive(False)
             movVbox = gtk.VBox(homogeneous=False, spacing=2)
-            movLabel = gtk.Label("Here you can create a video made up of all your pictures.\nRemember, the path MUST end in '.mp4'.")
-
-            movLabel_2 = gtk.Label("Path:")
-            movEntry = gtk.Entry()
-            movHbox_1 = gtk.HBox(homogeneous=True)
+            movLabel = gtk.Label("Here you can create a video made up of all your pictures. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
+            movFileButton = gtk.Button(label="Choose a location")
             movButton = gtk.Button(label="Create")
             movDia.add(movVbox)
             movVbox.pack_start(movLabel, expand=False)
-            movVbox.pack_start(movHbox_1, expand=False)
+            movVbox.pack_start(movFileButton, expand=False)
             movVbox.pack_start(movButton, expand=False)
-            movHbox_1.pack_start(movLabel_2, expand=False)
-            movHbox_1.pack_start(movEntry, expand=False)
             movButton.connect("clicked", movGen)
+            movFileButton.connect("clicked", movPick)
             movDia.show_all()
 
         def capture(takeBut):
@@ -140,8 +144,6 @@ class Main:
         filmBut.connect("clicked", movify)
         shareBut = gtk.Button(label="Share Video")
         hbox2 = gtk.HBox(homogeneous=True)
-        leftBut = gtk.Button(label="Previous")
-        rightBut = gtk.Button(label="Next")
         aboutBut = gtk.Button(label="About")
         aboutBut.connect("clicked", about)
         pic = gtk.Image()
@@ -157,8 +159,6 @@ class Main:
         vbox1.pack_start(hbox2)
         hbox2.pack_start(filmBut, expand=False)
         #hbox2.pack_start(shareBut)
-        #hbox2.pack_start(leftBut)
-        #hbox2.pack_start(rightBut)
         hbox2.pack_start(aboutBut)
         hbox.pack_start(vbox2)
         vbox2.pack_start(movie)
