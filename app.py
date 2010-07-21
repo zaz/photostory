@@ -136,21 +136,21 @@ class Main:
             date = cal.get_date()
             if date in self.db:
                 os.remove(self.db[date])
-                pic.set_from_file("/usr/share/photostory/data/nopic.png")
+                pic.set_from_file("data/nopic.png")
                 if date == todayDate:
                     takeBut.set_label("Take today's picture")
                     takeBut.set_sensitive(True)
                 gaps = 0
                 i = 0
                 for element in self.db:
-                    oldPath = "/usr/share/photostory/pictures/" + str(i) + ".png"
+                    oldPath = "pictures/" + str(i) + ".png"
                     if not os.path.exists(oldPath):
                         gaps += 1
                         i += 1
-                    oldPath = "/usr/share/photostory/pictures/" + str(i) + ".png"
+                    oldPath = "pictures/" + str(i) + ".png"
                     if os.path.exists(oldPath):
                         key = getKey(self.db, oldPath)
-                        newPath = "/usr/share/photostory/pictures/" + str(i-gaps) + ".png"
+                        newPath = "pictures/" + str(i-gaps) + ".png"
                         os.rename(oldPath, newPath)
                         self.db[key] = newPath
                     i += 1
