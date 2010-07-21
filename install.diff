@@ -1,5 +1,5 @@
---- app.py	2010-07-20 22:48:07.868791000 +0100
-+++ app.py	2010-07-21 16:39:53.017675188 +0100
+--- photostory	2010-07-20 21:09:41.832746000 +0100
++++ photostory	2010-07-21 17:30:54.057675958 +0100
 @@ -23,8 +23,8 @@
          xvimagesink = None
          movie = None
@@ -33,7 +33,7 @@
          win.set_resizable(False)
          win.set_title("Photostory")
 -        win.set_icon_from_file("data/icon.svg")
-+        win.set_icon_from_file("/usr/local/share/photostory/data/icon.svg")
++        win.set_icon_from_file("/usr/local/share/icons/hicolor/scalable/apps/photostory.svg")
          movie = gtk.DrawingArea()
          hbox = gtk.HBox(homogeneous=False, spacing=3)
          vbox1 = gtk.VBox(homogeneous=False)

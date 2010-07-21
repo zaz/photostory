@@ -6,7 +6,7 @@ from glob import glob
 import os
 
 # Change the paths to point to the correct directories:
-os.system('patch -b app.py install.diff')
+os.system('patch -b photostory install.diff')
 
 setup(name='Photostory',
       version='0.9',
@@ -22,10 +22,10 @@ setup(name='Photostory',
       url='http://launchpad.net/photostory',
       license='GNU GPL v3',
       data_files=[ # FIXME: Create empty 'pictures' directory.
-                  ('share/photostory', ['app.py']),
+                  ('share/bin', ['photostory']),
                   ('share/photostory/data', glob('data/*')),
                   ('share/applications/', ['photostory.desktop']),
-                  ('share/icons/hicolor/scalable/apps', ['data/icon.svg']),
+                  ('share/icons/hicolor/scalable/apps', ['data/photostory.svg']),
                  ],
       requires=['gst', 'gtk2']
      )
