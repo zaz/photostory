@@ -12,6 +12,7 @@ import gtk
 from time import strftime
 import time
 import os.path
+import os
 import cPickle
 
 class Main:
@@ -128,6 +129,33 @@ class Main:
             self.ind += 1
             takeBut.set_label("Picture taken this day.")
             takeBut.set_sensitive(False)
+            
+        def deletePic(deleteBut):
+            def getKey(dic, val):
+                return [k for k, v in dic.iteritems() if v == val][0]
+            date = cal.get_date()
+            if date in self.db:
+                os.remove(self.db[date])
+                pic.set_from_file("/usr/share/photostory/data/nopic.png")
+                if date == todayDate:
+                    takeBut.set_label("Take today's picture")
+                    takeBut.set_sensitive(True)
+                gaps = 0
+                i = 0
+                for element in self.db:
+                    oldPath = "/usr/share/photostory/pictures/" + str(i) + ".png"
+                    if not os.path.exists(oldPath):
+                        gaps += 1
+                        i += 1
+                    oldPath = "/usr/share/photostory/pictures/" + str(i) + ".png"
+                    if os.path.exists(oldPath):
+                        key = getKey(self.db, oldPath)
+                        newPath = "/usr/share/photostory/pictures/" + str(i-gaps) + ".png"
+                        os.rename(oldPath, newPath)
+                        self.db[key] = newPath
+                    i += 1
+                del self.db[date]
+                self.ind -= 1
 
         #Interface
         win = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -142,6 +170,8 @@ class Main:
         vbox2 = gtk.VBox(homogeneous = False)   
         filmBut = gtk.Button(label="Create Film")
         filmBut.connect("clicked", movify)
+        deleteBut = gtk.Button(label="Delete Picture")
+        deleteBut.connect("clicked", deletePic)
         shareBut = gtk.Button(label="Share Video")
         hbox2 = gtk.HBox(homogeneous=True)
         aboutBut = gtk.Button(label="About")
@@ -158,6 +188,7 @@ class Main:
         vbox1.pack_start(pic)
         vbox1.pack_start(hbox2)
         hbox2.pack_start(filmBut, expand=False)
+        hbox2.pack_start(deleteBut, expand=False)
         #hbox2.pack_start(shareBut)
         hbox2.pack_start(aboutBut)
         hbox.pack_start(vbox2)
