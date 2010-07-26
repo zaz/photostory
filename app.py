@@ -166,7 +166,7 @@ class Main:
             else: 
                 self.pic = gtk.Label()
                 self.pic.set_justify(gtk.JUSTIFY_CENTER)
-                self.pic.set_markup("<span size='54000' foreground='#616161'>No Picture\nToday</span>");
+                self.pic.set_markup("<span size='54000'>No Picture\nToday</span>");
                 self.pic.set_size_request(640, 480)
             vbox1.pack_start(self.pic)
             vbox1.pack_start(hbox2)
