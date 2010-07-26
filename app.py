@@ -23,7 +23,7 @@ class Main:
         pipeline = None
         xvimagesink = None
         movie = None
-        pic=None
+        self.pic=None
         self.db = cPickle.load(open('data/db', 'rb'))
         self.ind = int(cPickle.load(open('data/num', 'rb')))
         todayPicName = "pictures/" + str(self.ind) + ".png"
@@ -31,10 +31,7 @@ class Main:
 
         def chooseDay(cal):
             dateTuple = cal.get_date()
-            if dateTuple in self.db:
-                pic.set_from_file(self.db[dateTuple])
-            else:
-                pic.set_from_file("data/nopic.png")
+            setPic(dateTuple)
 
         def closedown(win):
             print 'ind ' + str(self.ind)
@@ -125,7 +122,7 @@ class Main:
             stillPipe.set_state(gst.STATE_NULL)
             xvimagesink.set_xwindow_id(movie.window.xid)
             pipeline.set_state(gst.STATE_PLAYING)
-            pic.set_from_file(todayPicName)
+            setPic(todayPicName)
             self.ind += 1
             takeBut.set_label("Picture taken this day.")
             takeBut.set_sensitive(False)
@@ -136,7 +133,7 @@ class Main:
             date = cal.get_date()
             if date in self.db:
                 os.remove(self.db[date])
-                pic.set_from_file("data/nopic.png")
+                setPic("")
                 if date == todayDate:
                     takeBut.set_label("Take today's picture")
                     takeBut.set_sensitive(True)
@@ -157,6 +154,24 @@ class Main:
                 del self.db[date]
                 self.ind -= 1
 
+        def setPic(date):
+            if self.pic != None:
+                vbox1.remove(self.pic)
+                vbox1.remove(hbox2)
+            if date in self.db:
+                self.pic = gtk.Image()
+                self.pic.set_from_file(self.db[date])
+                takeBut.set_label("Picture taken for this day.")
+                takeBut.set_sensitive(False)
+            else: 
+                self.pic = gtk.Label()
+                self.pic.set_justify(gtk.JUSTIFY_CENTER)
+                self.pic.set_markup("<span size='54000' foreground='#616161'>No Picture\nToday</span>");
+                self.pic.set_size_request(640, 480)
+            vbox1.pack_start(self.pic)
+            vbox1.pack_start(hbox2)
+            vbox1.show_all()
+
         #Interface
         win = gtk.Window(gtk.WINDOW_TOPLEVEL)
         win.connect("destroy", closedown)
@@ -176,17 +191,19 @@ class Main:
         hbox2 = gtk.HBox(homogeneous=True)
         aboutBut = gtk.Button(label="About")
         aboutBut.connect("clicked", about)
-        pic = gtk.Image()
+            
         cal = gtk.Calendar()
         todayDate = cal.get_date()
         cal.connect("day-selected", chooseDay)
+        
         takeBut = gtk.Button(label="Take today's picture")
         takeBut.connect("clicked", capture)
+        
+        setPic(todayDate)
+        
         win.add(hbox)
         hbox.pack_start(vbox1, expand=False)
         hbox.pack_start(vbox2)
-        vbox1.pack_start(pic)
-        vbox1.pack_start(hbox2)
         hbox2.pack_start(filmBut, expand=False)
         hbox2.pack_start(deleteBut, expand=False)
         #hbox2.pack_start(shareBut)
@@ -195,12 +212,6 @@ class Main:
         vbox2.pack_start(movie)
         vbox2.pack_start(cal, expand=False, padding=50)
         vbox2.pack_start(takeBut, expand=False)
-        if todayDate in self.db:
-            pic.set_from_file(self.db[todayDate])
-            takeBut.set_label("Picture taken for this day.")
-            takeBut.set_sensitive(False)
-        else:
-            pic.set_from_file("data/nopic.png")
 
         win.show_all()
 
@@ -209,7 +220,7 @@ class Main:
 
         camera = gst.element_factory_make("v4l2src", "camera")
         camera.set_property("device", "/dev/video0")
-
+        
         caps = gst.Caps("video/x-raw-yuv,width=640,height=480,framerate=30/1")
         filt = gst.element_factory_make("capsfilter", "filter")
         filt.set_property("caps", caps)
@@ -222,7 +233,6 @@ class Main:
         xvimagesink.set_xwindow_id(movie.window.xid)
 
         pipeline.set_state(gst.STATE_PLAYING)
-        
 
 start=Main()
 gtk.main()
