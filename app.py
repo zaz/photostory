@@ -24,6 +24,7 @@ class Main:
         xvimagesink = None
         movie = None
         pic=None
+        self.movPath = None
         self.db = cPickle.load(open('data/db', 'rb'))
         self.ind = int(cPickle.load(open('data/num', 'rb')))
         todayPicName = "pictures/" + str(self.ind) + ".png"
@@ -57,7 +58,7 @@ class Main:
                 movPicker = gtk.FileChooserDialog(title="Choose a save location", parent=movDia, action=gtk.FILE_CHOOSER_ACTION_SAVE, buttons=(("Save Here", -6)), backend=None)
                 movRes = movPicker.run()
                 if movRes == -6:
-                    movPath = movPicker.get_filename()
+                    self.movPath = movPicker.get_filename()
                     movPicker.destroy()
 
             def movGen(movButton):
@@ -78,7 +79,7 @@ class Main:
                 filmTheora = gst.element_factory_make("xvidenc", "filmTheora")
                 filmOggmux = gst.element_factory_make("ffmux_mp4", "filmOggmux")
                 filmFilesink = gst.element_factory_make("filesink", "filmFilesink")
-                filmFilesink.set_property("location", movPath)
+                filmFilesink.set_property("location", self.movPath)
 
                 filmPipe.add(filmSrc, filmFilt1, filmPngDec, filmff, filmFilt2, filmTheora, filmOggmux, filmFilesink)
                 gst.element_link_many(filmSrc, filmFilt1, filmPngDec, filmff, filmFilt2, filmTheora, filmOggmux, filmFilesink)
