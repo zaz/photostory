@@ -122,10 +122,8 @@ class Main:
             stillPipe.set_state(gst.STATE_NULL)
             xvimagesink.set_xwindow_id(movie.window.xid)
             pipeline.set_state(gst.STATE_PLAYING)
-            setPic(todayPicName)
+            setPic(todayDate)
             self.ind += 1
-            takeBut.set_label("Picture taken this day.")
-            takeBut.set_sensitive(False)
             
         def deletePic(deleteBut):
             def getKey(dic, val):
@@ -161,8 +159,9 @@ class Main:
             if date in self.db:
                 self.pic = gtk.Image()
                 self.pic.set_from_file(self.db[date])
-                takeBut.set_label("Picture taken for this day.")
-                takeBut.set_sensitive(False)
+                if date == todayDate:
+                    takeBut.set_label("Picture taken for this day.")
+                    takeBut.set_sensitive(False)
             else: 
                 self.pic = gtk.Label()
                 self.pic.set_justify(gtk.JUSTIFY_CENTER)
