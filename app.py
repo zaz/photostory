@@ -159,10 +159,15 @@ class Main:
             if date in self.db:
                 self.pic = gtk.Image()
                 self.pic.set_from_file(self.db[date])
-                if date == todayDate:
-                    takeBut.set_label("Picture taken for this day.")
-                    takeBut.set_sensitive(False)
+                takeBut.set_label("Picture taken for this day.")
+                takeBut.set_sensitive(False)
             else: 
+                if date == todayDate:
+                    takeBut.set_label("Take today's picture")
+                    takeBut.set_sensitive(True)
+                else:
+                    takeBut.set_label("Take today's picture")
+                    takeBut.set_sensitive(False)
                 self.pic = gtk.Label()
                 self.pic.set_justify(gtk.JUSTIFY_CENTER)
                 self.pic.set_markup("<span size='54000'>No Picture\nToday</span>");
