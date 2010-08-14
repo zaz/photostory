@@ -46,6 +46,9 @@ class Main:
             dAbout = gtk.AboutDialog()
             dAbout.set_name("Photostory")
             dAbout.set_comments("Photostory is an application that lets you tell the story of your life in pictures, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet.")
+            dAbout.set_artists(("Josh Brown", ""))
+            dAbout.set_authors(("Joel Auterson", "David Turner"))
+            dAbout.set_website("http://launchpad.net/photostory")
             response = dAbout.run()
             if response == -6:
                 dAbout.destroy()
