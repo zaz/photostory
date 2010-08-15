@@ -1,0 +1,48 @@
+--- photostory	2010-07-20 21:09:41.832746000 +0100
++++ photostory	2010-07-21 17:30:54.057675958 +0100
+@@ -23,8 +23,8 @@
+         xvimagesink = None
+         movie = None
+         pic=None
+-        self.db = cPickle.load(open('data/db', 'rb'))
+-        self.ind = int(cPickle.load(open('data/num', 'rb')))
++        self.db = cPickle.load(open('/usr/local/share/photostory/data/db', 'rb'))
++        self.ind = int(cPickle.load(open('/usr/local/share/photostory/data/num', 'rb')))
+         todayPicName = "pictures/" + str(self.ind) + ".png"
+         todayDate = None
+ 
+@@ -33,13 +33,13 @@
+             if dateTuple in self.db:
+                 pic.set_from_file(self.db[dateTuple])
+             else:
+-                pic.set_from_file("data/nopic.png")
++                pic.set_from_file("/usr/local/share/photostory/data/nopic.png")
+ 
+         def closedown(win):
+             print 'ind ' + str(self.ind)
+             print 'db' + str(self.db)
+-            cPickle.dump(self.db, open('data/db', 'wb'))
+-            cPickle.dump(self.ind, open('data/num', 'wb'))
++            cPickle.dump(self.db, open('/usr/local/share/photostory/data/db', 'wb'))
++            cPickle.dump(self.ind, open('/usr/local/share/photostory/data/num', 'wb'))
+             gtk.main_quit()
+ 
+         def about(aboutBut):
+@@ -135,7 +135,7 @@
+         win.set_default_size(900, 600)
+         win.set_resizable(False)
+         win.set_title("Photostory")
+-        win.set_icon_from_file("data/icon.svg")
++        win.set_icon_from_file("/usr/local/share/icons/hicolor/scalable/apps/photostory.svg")
+         movie = gtk.DrawingArea()
+         hbox = gtk.HBox(homogeneous=False, spacing=3)
+         vbox1 = gtk.VBox(homogeneous=False)
+@@ -169,7 +169,7 @@
+             takeBut.set_label("Picture taken for this day.")
+             takeBut.set_sensitive(False)
+         else:
+-            pic.set_from_file("data/nopic.png")
++            pic.set_from_file("/usr/local/share/photostory/data/nopic.png")
+ 
+         win.show_all()
+ 

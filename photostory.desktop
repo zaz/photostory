@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Photostory
+GenericName=Photostory
+Comment = Lets you take a photo each day and make them into a video.
+Exec=/usr/local/share/bin/photostory
+Icon=photostory
+Terminal=false
+Categories=Graphics
