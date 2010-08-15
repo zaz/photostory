@@ -17,15 +17,14 @@ import cPickle
 
 class Main:
 
-
     def __init__(self):
 
         pipeline = None
         xvimagesink = None
         movie = None
-        self.pic=None
-        pic=None
         self.movPath = None
+        self.adj = gtk.Adjustment(5, 1, 10, 1)
+        self.pic=None
         self.db = cPickle.load(open('data/db', 'rb'))
         self.ind = int(cPickle.load(open('data/num', 'rb')))
         todayPicName = "pictures/" + str(self.ind) + ".png"
@@ -70,7 +69,7 @@ class Main:
                 filmSrc = gst.element_factory_make("multifilesrc", "filmSrc")
                 filmSrc.set_property("location", "pictures/%d.png")
                 filmFilt1 = gst.element_factory_make("capsfilter", "filmFilt1")
-                filmCap1 = gst.Caps("image/png,framerate=5/1,pixel-aspect-ratio=1/1")
+                filmCap1 = gst.Caps("image/png,framerate=" + str(self.adj.get_value()) + "/1,pixel-aspect-ratio=1/1")
                 filmFilt1.set_property("caps", filmCap1)
                 filmPngDec = gst.element_factory_make("pngdec", "filmPngDec")
                 filmff = gst.element_factory_make("ffmpegcolorspace", "filmff")
@@ -96,8 +95,18 @@ class Main:
             movLabel = gtk.Label("Here you can create a video made up of all your pictures. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
             movFileButton = gtk.Button(label="Choose a location")
             movButton = gtk.Button(label="Create")
+            
+            #FPS Slider
+            movSliderBox = gtk.HBox(homogeneous=False, spacing=3)
+            movSliderLabel = gtk.Label("FPS:")
+            movSlider = gtk.HScale(self.adj)
+            movSlider.set_digits(0)
+            movSliderBox.pack_start(movSliderLabel, expand=False)
+            movSliderBox.pack_start(movSlider, expand=True)
+            
             movDia.add(movVbox)
             movVbox.pack_start(movLabel, expand=False)
+            movVbox.pack_start(movSliderBox, expand=False)
             movVbox.pack_start(movFileButton, expand=False)
             movVbox.pack_start(movButton, expand=False)
             movButton.connect("clicked", movGen)
