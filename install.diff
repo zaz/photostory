@@ -1,46 +1,6 @@
---- photostory	2010-08-16 10:51:49.585558000 +0100
-+++ photostory	2010-08-16 10:57:08.908925045 +0100
-@@ -25,8 +25,8 @@
-         self.movPath = None
-         self.adj = gtk.Adjustment(5, 1, 10, 1)
-         self.pic=None
--        self.db = cPickle.load(open('data/db', 'rb'))
--        self.ind = int(cPickle.load(open('data/num', 'rb')))
-+        self.db = cPickle.load(open('/usr/local/share/photostory/data/db', 'rb'))
-+        self.ind = int(cPickle.load(open('/usr/local/share/photostory/data/num', 'rb')))
-         todayPicName = "pictures/" + str(self.ind) + ".png"
-         todayDate = None
- 
-@@ -37,8 +37,8 @@
-         def closedown(win):
-             print 'ind ' + str(self.ind)
-             print 'db' + str(self.db)
--            cPickle.dump(self.db, open('data/db', 'wb'))
--            cPickle.dump(self.ind, open('data/num', 'wb'))
-+            cPickle.dump(self.db, open('/usr/local/share/photostory/data/db', 'wb'))
-+            cPickle.dump(self.ind, open('/usr/local/share/photostory/data/num', 'wb'))
-             gtk.main_quit()
- 
-         def about(aboutBut):
-@@ -152,14 +152,14 @@
-                 gaps = 0
-                 i = 0
-                 for element in self.db:
--                    oldPath = "pictures/" + str(i) + ".png"
-+                    oldPath = "/usr/local/share/photostory/pictures/" + str(i) + ".png"
-                     if not os.path.exists(oldPath):
-                         gaps += 1
-                         i += 1
--                    oldPath = "pictures/" + str(i) + ".png"
-+                    oldPath = "/usr/local/share/photostory/pictures/" + str(i) + ".png"
-                     if os.path.exists(oldPath):
-                         key = getKey(self.db, oldPath)
--                        newPath = "pictures/" + str(i-gaps) + ".png"
-+                        newPath = "/usr/local/share/photostory/pictures/" + str(i-gaps) + ".png"
-                         os.rename(oldPath, newPath)
-                         self.db[key] = newPath
-                     i += 1
-@@ -196,7 +196,7 @@
+--- photostory	2010-08-16 17:23:41.744783667 +0100
++++ photostory	2010-08-16 17:29:36.963710900 +0100
+@@ -211,7 +211,7 @@
          win.set_default_size(900, 600)
          win.set_resizable(False)
          win.set_title("Photostory")
