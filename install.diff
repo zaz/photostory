@@ -1,9 +1,9 @@
---- photostory	2010-07-20 21:09:41.832746000 +0100
-+++ photostory	2010-07-21 17:30:54.057675958 +0100
-@@ -23,8 +23,8 @@
-         xvimagesink = None
-         movie = None
-         pic=None
+--- photostory	2010-08-16 10:51:49.585558000 +0100
++++ photostory	2010-08-16 10:57:08.908925045 +0100
+@@ -25,8 +25,8 @@
+         self.movPath = None
+         self.adj = gtk.Adjustment(5, 1, 10, 1)
+         self.pic=None
 -        self.db = cPickle.load(open('data/db', 'rb'))
 -        self.ind = int(cPickle.load(open('data/num', 'rb')))
 +        self.db = cPickle.load(open('/usr/local/share/photostory/data/db', 'rb'))
@@ -11,13 +11,7 @@
          todayPicName = "pictures/" + str(self.ind) + ".png"
          todayDate = None
  
-@@ -33,13 +33,13 @@
-             if dateTuple in self.db:
-                 pic.set_from_file(self.db[dateTuple])
-             else:
--                pic.set_from_file("data/nopic.png")
-+                pic.set_from_file("/usr/local/share/photostory/data/nopic.png")
- 
+@@ -37,8 +37,8 @@
          def closedown(win):
              print 'ind ' + str(self.ind)
              print 'db' + str(self.db)
@@ -28,21 +22,30 @@
              gtk.main_quit()
  
          def about(aboutBut):
-@@ -135,7 +135,7 @@
+@@ -152,14 +152,14 @@
+                 gaps = 0
+                 i = 0
+                 for element in self.db:
+-                    oldPath = "pictures/" + str(i) + ".png"
++                    oldPath = "/usr/local/share/photostory/pictures/" + str(i) + ".png"
+                     if not os.path.exists(oldPath):
+                         gaps += 1
+                         i += 1
+-                    oldPath = "pictures/" + str(i) + ".png"
++                    oldPath = "/usr/local/share/photostory/pictures/" + str(i) + ".png"
+                     if os.path.exists(oldPath):
+                         key = getKey(self.db, oldPath)
+-                        newPath = "pictures/" + str(i-gaps) + ".png"
++                        newPath = "/usr/local/share/photostory/pictures/" + str(i-gaps) + ".png"
+                         os.rename(oldPath, newPath)
+                         self.db[key] = newPath
+                     i += 1
+@@ -196,7 +196,7 @@
          win.set_default_size(900, 600)
          win.set_resizable(False)
          win.set_title("Photostory")
--        win.set_icon_from_file("data/icon.svg")
-+        win.set_icon_from_file("/usr/local/share/icons/hicolor/scalable/apps/photostory.svg")
+-        win.set_icon_from_file("data/photostory.svg")
++        win.set_icon_from_file("/usr/local/share/photostory/data/photostory.svg")
          movie = gtk.DrawingArea()
          hbox = gtk.HBox(homogeneous=False, spacing=3)
          vbox1 = gtk.VBox(homogeneous=False)
-@@ -169,7 +169,7 @@
-             takeBut.set_label("Picture taken for this day.")
-             takeBut.set_sensitive(False)
-         else:
--            pic.set_from_file("data/nopic.png")
-+            pic.set_from_file("/usr/local/share/photostory/data/nopic.png")
- 
-         win.show_all()
- 
