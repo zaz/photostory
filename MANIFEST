@@ -3,5 +3,5 @@ install.diff
 photostory.desktop
 setup.py
 pictures
-data/photostory.svg
+photostory.svg
 data/nopic.png

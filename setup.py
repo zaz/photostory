@@ -23,7 +23,7 @@ setup(name='Photostory',
       data_files=[
                   ('share/bin', ['photostory']),
                   ('share/applications/', ['photostory.desktop']),
-                  ('share/icons/hicolor/scalable/apps', ['data/photostory.svg']),
+                  ('share/icons/hicolor/scalable/apps', ['photostory.svg']),
                  ],
       requires=['gst', 'gtk2']
      )

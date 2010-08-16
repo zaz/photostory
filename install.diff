@@ -4,7 +4,7 @@
          win.set_default_size(900, 600)
          win.set_resizable(False)
          win.set_title("Photostory")
--        win.set_icon_from_file("data/photostory.svg")
+-        win.set_icon_from_file("photostory.svg")
 +        win.set_icon_from_file("/usr/local/share/photostory/data/photostory.svg")
          movie = gtk.DrawingArea()
          hbox = gtk.HBox(homogeneous=False, spacing=3)
