@@ -59,7 +59,7 @@ class Main:
         def about(aboutBut):
             dAbout = gtk.AboutDialog()
             dAbout.set_name("Photostory")
-            dAbout.set_comments("Photostory is an application that lets you tell the story of your life in pictures, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet.")
+            dAbout.set_comments("Photostory is an application that lets you tell the story of your life in photos, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet.")
             dAbout.set_artists(("Josh Brown", ""))
             dAbout.set_authors(("Joel Auterson", "David Turner"))
             dAbout.set_website("http://launchpad.net/photostory")
@@ -107,7 +107,7 @@ class Main:
             movDia.set_resizable(False)
             filmBut.set_sensitive(False)
             movVbox = gtk.VBox(homogeneous=False, spacing=2)
-            movLabel = gtk.Label("Here you can create a video made up of all your pictures. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
+            movLabel = gtk.Label("Here you can create a video made up of all your photos. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
             movFileButton = gtk.Button(label="Choose a location")
             movButton = gtk.Button(label="Create")
             
@@ -162,7 +162,7 @@ class Main:
                 os.remove(self.db[date])
                 setPic("")
                 if date == todayDate:
-                    takeBut.set_label("Take today's picture")
+                    takeBut.set_label("Take today's photo")
                     takeBut.set_sensitive(True)
                 gaps = 0
                 i = 0
@@ -188,18 +188,18 @@ class Main:
             if date in self.db:
                 self.pic = gtk.Image()
                 self.pic.set_from_file(self.db[date])
-                takeBut.set_label("Picture taken for this day.")
+                takeBut.set_label("Photo taken for this day.")
                 takeBut.set_sensitive(False)
             else: 
                 if date == todayDate:
-                    takeBut.set_label("Take today's picture")
+                    takeBut.set_label("Take today's photo")
                     takeBut.set_sensitive(True)
                 else:
-                    takeBut.set_label("Take today's picture")
+                    takeBut.set_label("Take today's photo")
                     takeBut.set_sensitive(False)
                 self.pic = gtk.Label()
                 self.pic.set_justify(gtk.JUSTIFY_CENTER)
-                self.pic.set_markup("<span size='54000'>No Picture\nToday</span>");
+                self.pic.set_markup("<span size='54000'>No Photo\nToday</span>");
                 self.pic.set_size_request(640, 480)
             vbox1.pack_start(self.pic)
             vbox1.pack_start(hbox2)
@@ -218,7 +218,7 @@ class Main:
         vbox2 = gtk.VBox(homogeneous = False)   
         filmBut = gtk.Button(label="Create Film")
         filmBut.connect("clicked", movify)
-        deleteBut = gtk.Button(label="Delete Picture")
+        deleteBut = gtk.Button(label="Delete Photo")
         deleteBut.connect("clicked", deletePic)
         shareBut = gtk.Button(label="Share Video")
         hbox2 = gtk.HBox(homogeneous=True)
@@ -229,7 +229,7 @@ class Main:
         todayDate = cal.get_date()
         cal.connect("day-selected", chooseDay)
         
-        takeBut = gtk.Button(label="Take today's picture")
+        takeBut = gtk.Button(label="Take today's photo")
         takeBut.connect("clicked", capture)
         
         setPic(todayDate)
