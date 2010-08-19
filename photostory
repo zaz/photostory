@@ -26,9 +26,9 @@ class Main:
         self.adj = gtk.Adjustment(5, 1, 10, 1)
         self.pic=None
 
-        # If the `~/.photostory/pictures` directory doesn't exist, create it:
-        if not os.path.exists(os.path.expanduser('~/.photostory/pictures')):
-            os.makedirs(os.path.expanduser('~/.photostory/pictures'))
+        # If the `~/.photostory/photos` directory doesn't exist, create it:
+        if not os.path.exists(os.path.expanduser('~/.photostory/photos')):
+            os.makedirs(os.path.expanduser('~/.photostory/photos'))
 
         # If the `~/.photostory/db` pickle doesn't exist, create it:
         if not os.path.isfile(os.path.expanduser('~/.photostory/db')):
@@ -42,7 +42,7 @@ class Main:
         self.db = cPickle.load(open(os.path.expanduser('~/.photostory/db'), 'rb'))
         self.ind = int(cPickle.load(open(os.path.expanduser('~/.photostory/num'), 'rb')))
 
-        todayPicName = os.path.expanduser('~/.photostory/pictures/') + str(self.ind) + ".png"
+        todayPicName = os.path.expanduser('~/.photostory/photos/') + str(self.ind) + ".png"
         todayDate = None
 
         def chooseDay(cal):
@@ -82,7 +82,7 @@ class Main:
 
                 filmPipe = gst.Pipeline("filmPipe")
                 filmSrc = gst.element_factory_make("multifilesrc", "filmSrc")
-                filmSrc.set_property("location", "pictures/%d.png")
+                filmSrc.set_property("location", "photos/%d.png")
                 filmFilt1 = gst.element_factory_make("capsfilter", "filmFilt1")
                 filmCap1 = gst.Caps("image/png,framerate=" + str(self.adj.get_value()) + "/1,pixel-aspect-ratio=1/1")
                 filmFilt1.set_property("caps", filmCap1)
@@ -167,14 +167,14 @@ class Main:
                 gaps = 0
                 i = 0
                 for element in self.db:
-                    oldPath = os.path.expanduser('~/.photostory/pictures/') + str(i) + ".png"
+                    oldPath = os.path.expanduser('~/.photostory/photos/') + str(i) + ".png"
                     if not os.path.exists(oldPath):
                         gaps += 1
                         i += 1
-                    oldPath = os.path.expanduser('~/.photostory/pictures/') + str(i) + ".png"
+                    oldPath = os.path.expanduser('~/.photostory/photos/') + str(i) + ".png"
                     if os.path.exists(oldPath):
                         key = getKey(self.db, oldPath)
-                        newPath = os.path.expanduser('~/.photostory/pictures/') + str(i-gaps) + ".png"
+                        newPath = os.path.expanduser('~/.photostory/photos/') + str(i-gaps) + ".png"
                         os.rename(oldPath, newPath)
                         self.db[key] = newPath
                     i += 1
