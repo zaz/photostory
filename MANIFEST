@@ -3,6 +3,4 @@ install.diff
 photostory.desktop
 setup.py
 pictures
-data/db
-data/photostory.svg
-data/num
+photostory.svg

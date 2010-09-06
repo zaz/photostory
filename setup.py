@@ -2,7 +2,6 @@
 # Installation script for Photostory
 
 from distutils.core import setup
-from glob import glob
 import os
 
 # Change the paths to point to the correct directories:
@@ -21,11 +20,10 @@ setup(name='Photostory',
                 'video'],
       url='http://launchpad.net/photostory',
       license='GNU GPL v3',
-      data_files=[ # FIXME: Create empty 'pictures' directory.
+      data_files=[
                   ('share/bin', ['photostory']),
-                  ('share/photostory/data', glob('data/*')),
                   ('share/applications/', ['photostory.desktop']),
-                  ('share/icons/hicolor/scalable/apps', ['data/photostory.svg']),
+                  ('share/icons/hicolor/scalable/apps', ['photostory.svg']),
                  ],
       requires=['gst', 'gtk2']
      )

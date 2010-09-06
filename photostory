@@ -25,9 +25,24 @@ class Main:
         self.movPath = None
         self.adj = gtk.Adjustment(5, 1, 10, 1)
         self.pic=None
-        self.db = cPickle.load(open('data/db', 'rb'))
-        self.ind = int(cPickle.load(open('data/num', 'rb')))
-        todayPicName = "pictures/" + str(self.ind) + ".png"
+
+        # If the `~/.photostory/photos` directory doesn't exist, create it:
+        if not os.path.exists(os.path.expanduser('~/.photostory/photos')):
+            os.makedirs(os.path.expanduser('~/.photostory/photos'))
+
+        # If the `~/.photostory/db` pickle doesn't exist, create it:
+        if not os.path.isfile(os.path.expanduser('~/.photostory/db')):
+            cPickle.dump({}, open(os.path.expanduser('~/.photostory/db'), 'w'))
+
+        # If the `~/.photostory/num` pickle doesn't exist, create it:
+        if not os.path.isfile(os.path.expanduser('~/.photostory/num')):
+            cPickle.dump(0, open(os.path.expanduser('~/.photostory/num'), 'w'))
+
+        # Load the `db` and `num` pickles:
+        self.db = cPickle.load(open(os.path.expanduser('~/.photostory/db'), 'rb'))
+        self.ind = int(cPickle.load(open(os.path.expanduser('~/.photostory/num'), 'rb')))
+
+        todayPicName = os.path.expanduser('~/.photostory/photos/') + str(self.ind) + ".png"
         todayDate = None
 
         def chooseDay(cal):
@@ -37,14 +52,14 @@ class Main:
         def closedown(win):
             print 'ind ' + str(self.ind)
             print 'db' + str(self.db)
-            cPickle.dump(self.db, open('data/db', 'wb'))
-            cPickle.dump(self.ind, open('data/num', 'wb'))
+            cPickle.dump(self.db, open(os.path.expanduser('~/.photostory/db'), 'wb'))
+            cPickle.dump(self.ind, open(os.path.expanduser('~/.photostory/num'), 'wb'))
             gtk.main_quit()
 
         def about(aboutBut):
             dAbout = gtk.AboutDialog()
             dAbout.set_name("Photostory")
-            dAbout.set_comments("Photostory is an application that lets you tell the story of your life in pictures, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet.")
+            dAbout.set_comments("Photostory is an application that lets you tell the story of your life in photos, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet.")
             dAbout.set_artists(("Josh Brown", ""))
             dAbout.set_authors(("Joel Auterson", "David Turner"))
             dAbout.set_website("http://launchpad.net/photostory")
@@ -67,7 +82,7 @@ class Main:
 
                 filmPipe = gst.Pipeline("filmPipe")
                 filmSrc = gst.element_factory_make("multifilesrc", "filmSrc")
-                filmSrc.set_property("location", "pictures/%d.png")
+                filmSrc.set_property("location", "photos/%d.png")
                 filmFilt1 = gst.element_factory_make("capsfilter", "filmFilt1")
                 filmCap1 = gst.Caps("image/png,framerate=" + str(self.adj.get_value()) + "/1,pixel-aspect-ratio=1/1")
                 filmFilt1.set_property("caps", filmCap1)
@@ -92,7 +107,7 @@ class Main:
             movDia.set_resizable(False)
             filmBut.set_sensitive(False)
             movVbox = gtk.VBox(homogeneous=False, spacing=2)
-            movLabel = gtk.Label("Here you can create a video made up of all your pictures. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
+            movLabel = gtk.Label("Here you can create a video made up of all your photos. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
             movFileButton = gtk.Button(label="Choose a location")
             movButton = gtk.Button(label="Create")
             
@@ -147,19 +162,19 @@ class Main:
                 os.remove(self.db[date])
                 setPic("")
                 if date == todayDate:
-                    takeBut.set_label("Take today's picture")
+                    takeBut.set_label("Take today's photo")
                     takeBut.set_sensitive(True)
                 gaps = 0
                 i = 0
                 for element in self.db:
-                    oldPath = "pictures/" + str(i) + ".png"
+                    oldPath = os.path.expanduser('~/.photostory/photos/') + str(i) + ".png"
                     if not os.path.exists(oldPath):
                         gaps += 1
                         i += 1
-                    oldPath = "pictures/" + str(i) + ".png"
+                    oldPath = os.path.expanduser('~/.photostory/photos/') + str(i) + ".png"
                     if os.path.exists(oldPath):
                         key = getKey(self.db, oldPath)
-                        newPath = "pictures/" + str(i-gaps) + ".png"
+                        newPath = os.path.expanduser('~/.photostory/photos/') + str(i-gaps) + ".png"
                         os.rename(oldPath, newPath)
                         self.db[key] = newPath
                     i += 1
@@ -173,18 +188,18 @@ class Main:
             if date in self.db:
                 self.pic = gtk.Image()
                 self.pic.set_from_file(self.db[date])
-                takeBut.set_label("Picture taken for this day.")
+                takeBut.set_label("Photo taken for this day.")
                 takeBut.set_sensitive(False)
             else: 
                 if date == todayDate:
-                    takeBut.set_label("Take today's picture")
+                    takeBut.set_label("Take today's photo")
                     takeBut.set_sensitive(True)
                 else:
-                    takeBut.set_label("Take today's picture")
+                    takeBut.set_label("Take today's photo")
                     takeBut.set_sensitive(False)
                 self.pic = gtk.Label()
                 self.pic.set_justify(gtk.JUSTIFY_CENTER)
-                self.pic.set_markup("<span size='54000'>No Picture\nToday</span>");
+                self.pic.set_markup("<span size='54000'>No Photo\nToday</span>");
                 self.pic.set_size_request(640, 480)
             vbox1.pack_start(self.pic)
             vbox1.pack_start(hbox2)
@@ -196,14 +211,14 @@ class Main:
         win.set_default_size(900, 600)
         win.set_resizable(False)
         win.set_title("Photostory")
-        win.set_icon_from_file("data/photostory.svg")
+        win.set_icon_from_file("photostory.svg")
         movie = gtk.DrawingArea()
         hbox = gtk.HBox(homogeneous=False, spacing=3)
         vbox1 = gtk.VBox(homogeneous=False)
         vbox2 = gtk.VBox(homogeneous = False)   
         filmBut = gtk.Button(label="Create Film")
         filmBut.connect("clicked", movify)
-        deleteBut = gtk.Button(label="Delete Picture")
+        deleteBut = gtk.Button(label="Delete Photo")
         deleteBut.connect("clicked", deletePic)
         shareBut = gtk.Button(label="Share Video")
         hbox2 = gtk.HBox(homogeneous=True)
@@ -214,7 +229,7 @@ class Main:
         todayDate = cal.get_date()
         cal.connect("day-selected", chooseDay)
         
-        takeBut = gtk.Button(label="Take today's picture")
+        takeBut = gtk.Button(label="Take today's photo")
         takeBut.connect("clicked", capture)
         
         setPic(todayDate)
