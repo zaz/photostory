@@ -110,7 +110,7 @@ class Main:
             movLabel = gtk.Label("Here you can create a video made up of all your photos. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
             movFileButton = gtk.Button(label="Choose a location")
             movButton = gtk.Button(label="Create")
-            
+
             #FPS Slider
             movSliderBox = gtk.HBox(homogeneous=False, spacing=3)
             movSliderLabel = gtk.Label("FPS:")
@@ -118,7 +118,7 @@ class Main:
             movSlider.set_digits(0)
             movSliderBox.pack_start(movSliderLabel, expand=False)
             movSliderBox.pack_start(movSlider, expand=True)
-            
+
             movDia.add(movVbox)
             movVbox.pack_start(movLabel, expand=False)
             movVbox.pack_start(movSliderBox, expand=False)
@@ -153,7 +153,7 @@ class Main:
             pipeline.set_state(gst.STATE_PLAYING)
             setPic(todayDate)
             self.ind += 1
-            
+
         def deletePic(deleteBut):
             def getKey(dic, val):
                 return [k for k, v in dic.iteritems() if v == val][0]
@@ -224,16 +224,16 @@ class Main:
         hbox2 = gtk.HBox(homogeneous=True)
         aboutBut = gtk.Button(label="About")
         aboutBut.connect("clicked", about)
-            
+
         cal = gtk.Calendar()
         todayDate = cal.get_date()
         cal.connect("day-selected", chooseDay)
-        
+
         takeBut = gtk.Button(label="Take today's photo")
         takeBut.connect("clicked", capture)
-        
+
         setPic(todayDate)
-        
+
         win.add(hbox)
         hbox.pack_start(vbox1, expand=False)
         hbox.pack_start(vbox2)
@@ -253,7 +253,7 @@ class Main:
 
         camera = gst.element_factory_make("v4l2src", "camera")
         camera.set_property("device", "/dev/video0")
-        
+
         caps = gst.Caps("video/x-raw-yuv,width=640,height=480,framerate=30/1")
         filt = gst.element_factory_make("capsfilter", "filter")
         filt.set_property("caps", caps)
