@@ -21,7 +21,7 @@ setup(name='Photostory',
       url='http://launchpad.net/photostory',
       license='GNU GPL v3',
       data_files=[
-                  ('share/bin', ['photostory']),
+                  ('bin', ['photostory']),
                   ('share/applications/', ['photostory.desktop']),
                   ('share/icons/hicolor/scalable/apps', ['photostory.svg']),
                  ],
