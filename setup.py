@@ -4,9 +4,6 @@
 from distutils.core import setup
 import os
 
-# Change the paths to point to the correct directories:
-os.system('patch -b photostory install.diff')
-
 setup(name='Photostory',
       version='0.9',
       description='Photostory lets you use your webcam to photo yourself\
