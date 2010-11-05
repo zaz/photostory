@@ -14,6 +14,8 @@ import time
 import os.path
 import os
 import cPickle
+from threading import Timer
+import glib
 
 class Main:
 
@@ -61,7 +63,7 @@ class Main:
             dAbout.set_name("Photostory")
             dAbout.set_comments("Photostory is an application that lets you tell the story of your life in photos, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet.")
             dAbout.set_artists(("Josh Brown", ""))
-            dAbout.set_authors(("Joel Auterson", "David Turner"))
+            dAbout.set_authors(("Joel Auterson", "David Turner", "Josh Brown"))
             dAbout.set_website("http://launchpad.net/photostory")
             response = dAbout.run()
             if response == -6:
@@ -129,30 +131,45 @@ class Main:
             movDia.show_all()
 
         def capture(takeBut):
-            pipeline.set_state(gst.STATE_NULL)
-            stillPipe = gst.Pipeline("stillPipe")
-            stillCam = gst.element_factory_make("v4l2src", "stillPipe")
-            stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
-            stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
-            stillFilt.set_property("caps", stillCap)
-            ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
-            pngEnc = gst.element_factory_make("pngenc", "pngenc")
-            filesink = gst.element_factory_make("filesink", "filesink")
-            filesink.set_property("location", todayPicName)
-            self.db[todayDate] = todayPicName
-            cal.freeze()
-            cal.select_month(todayDate[1], todayDate[0])
-            cal.select_day(todayDate[2])
-            cal.thaw()
-            stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-            gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-            stillPipe.set_state(gst.STATE_PLAYING)
-            time.sleep(1)
-            stillPipe.set_state(gst.STATE_NULL)
-            xvimagesink.set_xwindow_id(movie.window.xid)
-            pipeline.set_state(gst.STATE_PLAYING)
-            setPic(todayDate)
-            self.ind += 1
+
+            def takePic():
+                pipeline.set_state(gst.STATE_NULL)
+                stillPipe = gst.Pipeline("stillPipe")
+                stillCam = gst.element_factory_make("v4l2src", "stillPipe")
+                stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
+                stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
+                stillFilt.set_property("caps", stillCap)
+                ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
+                pngEnc = gst.element_factory_make("pngenc", "pngenc")
+                filesink = gst.element_factory_make("filesink", "filesink")
+                filesink.set_property("location", todayPicName)
+                self.db[todayDate] = todayPicName
+                cal.freeze()
+                cal.select_month(todayDate[1], todayDate[0])
+                cal.select_day(todayDate[2])
+                cal.thaw()
+                stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+                gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+                stillPipe.set_state(gst.STATE_PLAYING)
+                time.sleep(1)
+                stillPipe.set_state(gst.STATE_NULL)
+                xvimagesink.set_xwindow_id(movie.window.xid)
+                pipeline.set_state(gst.STATE_PLAYING)
+                setPic(todayDate)
+                self.ind += 1
+
+            def countdown():
+                if self.countNum == 0:
+                    takePic()
+                    return False
+                else:
+                    self.pic.set_markup("<span size='54000'>" + str(self.countNum) + "</span>");
+                    self.countNum = self.countNum - 1
+                    return True
+            
+            self.pic.set_markup("<span size='54000'>3</span>");
+            self.countNum = 2
+            glib.timeout_add(1000, countdown)
 
         def deletePic(deleteBut):
             def getKey(dic, val):
@@ -206,13 +223,14 @@ class Main:
             vbox1.show_all()
 
         #Interface
-        win = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        win.connect("destroy", closedown)
-        win.set_default_size(900, 600)
-        win.set_resizable(False)
-        win.set_title("Photostory")
-        win.set_icon_from_file("photostory.svg")
+        self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.win.connect("destroy", closedown)
+        self.win.set_default_size(900, 600)
+        self.win.set_resizable(False)
+        self.win.set_title("Photostory")
+        self.win.set_icon_from_file("photostory.svg")
         movie = gtk.DrawingArea()
+        movie.set_size_request(320, 240)
         hbox = gtk.HBox(homogeneous=False, spacing=3)
         vbox1 = gtk.VBox(homogeneous=False)
         vbox2 = gtk.VBox(homogeneous = False)   
@@ -234,7 +252,7 @@ class Main:
 
         setPic(todayDate)
 
-        win.add(hbox)
+        self.win.add(hbox)
         hbox.pack_start(vbox1, expand=False)
         hbox.pack_start(vbox2)
         hbox2.pack_start(filmBut, expand=False)
@@ -243,10 +261,10 @@ class Main:
         hbox2.pack_start(aboutBut)
         hbox.pack_start(vbox2)
         vbox2.pack_start(movie)
-        vbox2.pack_start(cal, expand=False, padding=50)
+        vbox2.pack_start(cal, expand=False, padding=25)
         vbox2.pack_start(takeBut, expand=False)
 
-        win.show_all()
+        self.win.show_all()
 
         #Pipeline stuff - feed
         pipeline = gst.Pipeline("mypipeline")
