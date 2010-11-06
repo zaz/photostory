@@ -158,18 +158,12 @@ class Main:
                 setPic(todayDate)
                 self.ind += 1
 
-            def countdown():
-                if self.countNum == 0:
-                    takePic()
-                    return False
-                else:
-                    self.pic.set_markup("<span size='54000'>" + str(self.countNum) + "</span>");
-                    self.countNum = self.countNum - 1
-                    return True
-            
-            self.pic.set_markup("<span size='54000'>3</span>");
-            self.countNum = 2
-            glib.timeout_add(1000, countdown)
+            def countdown(n = 3):
+                self.pic.set_markup("<span size='54000'>" + str(n) + "</span>")
+                if n == 0: takePic()
+                else: glib.timeout_add(1000, countdown, n-1)
+
+            countdown()
 
         def deletePic(deleteBut):
             def getKey(dic, val):
