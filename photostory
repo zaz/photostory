@@ -84,7 +84,7 @@ class Main:
 
                 filmPipe = gst.Pipeline("filmPipe")
                 filmSrc = gst.element_factory_make("multifilesrc", "filmSrc")
-                filmSrc.set_property("location", "photos/%d.png")
+                filmSrc.set_property("location", os.path.expanduser("~/.photostory/photos/%d.png"))
                 filmFilt1 = gst.element_factory_make("capsfilter", "filmFilt1")
                 filmCap1 = gst.Caps("image/png,framerate=" + str(self.adj.get_value()) + "/1,pixel-aspect-ratio=1/1")
                 filmFilt1.set_property("caps", filmCap1)
