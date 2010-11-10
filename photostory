@@ -84,9 +84,9 @@ class Main:
 
                 filmPipe = gst.Pipeline("filmPipe")
                 filmSrc = gst.element_factory_make("multifilesrc", "filmSrc")
-                filmSrc.set_property("location", os.path.expanduser("~/.photostory/photos/%d.png"))
+                filmSrc.set_property("location", os.path.expanduser("~/.photostory/photos/") + "%d.png")
                 filmFilt1 = gst.element_factory_make("capsfilter", "filmFilt1")
-                filmCap1 = gst.Caps("image/png,framerate=" + str(self.adj.get_value()) + "/1,pixel-aspect-ratio=1/1")
+                filmCap1 = gst.Caps("image/png,framerate=" + str(int(self.adj.get_value())) + "/1,pixel-aspect-ratio=1/1")
                 filmFilt1.set_property("caps", filmCap1)
                 filmPngDec = gst.element_factory_make("pngdec", "filmPngDec")
                 filmff = gst.element_factory_make("ffmpegcolorspace", "filmff")
@@ -248,15 +248,14 @@ class Main:
 
         self.win.add(hbox)
         hbox.pack_start(vbox1, expand=False)
-        hbox.pack_start(vbox2)
         hbox2.pack_start(filmBut, expand=False)
         hbox2.pack_start(deleteBut, expand=False)
         #hbox2.pack_start(shareBut)
         hbox2.pack_start(aboutBut)
-        hbox.pack_start(vbox2)
         vbox2.pack_start(movie)
         vbox2.pack_start(cal, expand=False, padding=25)
         vbox2.pack_start(takeBut, expand=False)
+        hbox.pack_start(vbox2)
 
         self.win.show_all()
 
