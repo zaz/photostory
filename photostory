@@ -222,7 +222,8 @@ class Main:
         self.win.set_default_size(900, 600)
         self.win.set_resizable(False)
         self.win.set_title("Photostory")
-        self.win.set_icon_from_file("photostory.svg")
+        if os.path.exists("photostory.svg"):
+            win.set_icon_from_file("photostory.svg")
         movie = gtk.DrawingArea()
         movie.set_size_request(320, 240)
         hbox = gtk.HBox(homogeneous=False, spacing=3)
