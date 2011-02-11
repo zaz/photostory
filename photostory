@@ -9,13 +9,13 @@ pygst.require("0.10")
 import gst
 import pygtk
 import gtk
-from time import strftime
 import time
 import os.path
 import os
-import cPickle
 from threading import Timer
 import glib
+import glob
+import shutil
 
 class Main:
 
@@ -27,35 +27,25 @@ class Main:
         self.movPath = None
         self.adj = gtk.Adjustment(5, 1, 10, 1)
         self.pic=None
+        self.dateString = None
+        self.todayDate = None
 
         # If the `~/.photostory/photos` directory doesn't exist, create it:
         if not os.path.exists(os.path.expanduser('~/.photostory/photos')):
             os.makedirs(os.path.expanduser('~/.photostory/photos'))
 
-        # If the `~/.photostory/db` pickle doesn't exist, create it:
-        if not os.path.isfile(os.path.expanduser('~/.photostory/db')):
-            cPickle.dump({}, open(os.path.expanduser('~/.photostory/db'), 'w'))
-
-        # If the `~/.photostory/num` pickle doesn't exist, create it:
-        if not os.path.isfile(os.path.expanduser('~/.photostory/num')):
-            cPickle.dump(0, open(os.path.expanduser('~/.photostory/num'), 'w'))
-
-        # Load the `db` and `num` pickles:
-        self.db = cPickle.load(open(os.path.expanduser('~/.photostory/db'), 'rb'))
-        self.ind = int(cPickle.load(open(os.path.expanduser('~/.photostory/num'), 'rb')))
-
-        todayPicName = os.path.expanduser('~/.photostory/photos/') + str(self.ind) + ".png"
-        todayDate = None
-
         def chooseDay(cal):
             dateTuple = cal.get_date()
-            setPic(dateTuple)
+            dateTuple = list(dateTuple)
+            dateTuple[1] = dateTuple[1] + 1
+            if (dateTuple[1] < 10):
+                dateTuple[1] = "0" + str(dateTuple[1])
+            if (dateTuple[2] < 10):
+                dateTuple[2] = "0" + str(dateTuple[2])
+            self.dateString = str(dateTuple[0]) + "-" + str(dateTuple[1]) + "-" + str(dateTuple[2])
+            setPic(self.dateString)
 
         def closedown(win):
-            print 'ind ' + str(self.ind)
-            print 'db' + str(self.db)
-            cPickle.dump(self.db, open(os.path.expanduser('~/.photostory/db'), 'wb'))
-            cPickle.dump(self.ind, open(os.path.expanduser('~/.photostory/num'), 'wb'))
             gtk.main_quit()
 
         def about(aboutBut):
@@ -82,9 +72,25 @@ class Main:
 
                 movDia.destroy()
 
+                #Move images to /tmp directory
+                photosList = glob.glob(os.path.expanduser("~/.photostory/photos/") + "*.png")
+                photosList = sorted(photosList)
+                numPhotos = len(photosList)
+                photoCount = 0
+                try:
+                    os.makedirs('/tmp/photostory')
+                except OSError:
+                    pass
+
+                while (photoCount < numPhotos):
+                    theFile ='/tmp/photostory/' + str(photoCount) + ".png"
+                    shutil.copy(photosList[photoCount], theFile)
+                    photoCount = photoCount + 1
+
+                #Generate video from images.
                 filmPipe = gst.Pipeline("filmPipe")
                 filmSrc = gst.element_factory_make("multifilesrc", "filmSrc")
-                filmSrc.set_property("location", os.path.expanduser("~/.photostory/photos/") + "%d.png")
+                filmSrc.set_property("location", os.path.expanduser("/tmp/photostory/") + "%d.png")
                 filmFilt1 = gst.element_factory_make("capsfilter", "filmFilt1")
                 filmCap1 = gst.Caps("image/png,framerate=" + str(int(self.adj.get_value())) + "/1,pixel-aspect-ratio=1/1")
                 filmFilt1.set_property("caps", filmCap1)
@@ -103,6 +109,7 @@ class Main:
                 filmPipe.set_state(gst.STATE_PLAYING)
                 time.sleep(5)
                 filmBut.set_sensitive(True)
+                shutil.rmtree('/tmp/photostory')
 
             movDia = gtk.Window(gtk.WINDOW_TOPLEVEL)
             movDia.set_title("Create Film")
@@ -142,12 +149,7 @@ class Main:
                 ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
                 pngEnc = gst.element_factory_make("pngenc", "pngenc")
                 filesink = gst.element_factory_make("filesink", "filesink")
-                filesink.set_property("location", todayPicName)
-                self.db[todayDate] = todayPicName
-                cal.freeze()
-                cal.select_month(todayDate[1], todayDate[0])
-                cal.select_day(todayDate[2])
-                cal.thaw()
+                filesink.set_property("location", os.path.expanduser('~/.photostory/photos/') + self.dateString + ".png")
                 stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
                 gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
                 stillPipe.set_state(gst.STATE_PLAYING)
@@ -155,8 +157,7 @@ class Main:
                 stillPipe.set_state(gst.STATE_NULL)
                 xvimagesink.set_xwindow_id(movie.window.xid)
                 pipeline.set_state(gst.STATE_PLAYING)
-                setPic(todayDate)
-                self.ind += 1
+                setPic(self.todayDate)
 
             def countdown(n = 3):
                 self.pic.set_markup("<span size='54000'>" + str(n) + "</span>")
@@ -166,43 +167,24 @@ class Main:
             countdown()
 
         def deletePic(deleteBut):
-            def getKey(dic, val):
-                return [k for k, v in dic.iteritems() if v == val][0]
-            date = cal.get_date()
-            if date in self.db:
-                os.remove(self.db[date])
-                setPic("")
-                if date == todayDate:
-                    takeBut.set_label("Take today's photo")
-                    takeBut.set_sensitive(True)
-                gaps = 0
-                i = 0
-                for element in self.db:
-                    oldPath = os.path.expanduser('~/.photostory/photos/') + str(i) + ".png"
-                    if not os.path.exists(oldPath):
-                        gaps += 1
-                        i += 1
-                    oldPath = os.path.expanduser('~/.photostory/photos/') + str(i) + ".png"
-                    if os.path.exists(oldPath):
-                        key = getKey(self.db, oldPath)
-                        newPath = os.path.expanduser('~/.photostory/photos/') + str(i-gaps) + ".png"
-                        os.rename(oldPath, newPath)
-                        self.db[key] = newPath
-                    i += 1
-                del self.db[date]
-                self.ind -= 1
+            picPath = os.path.expanduser('~/.photostory/photos/') + self.dateString + ".png"
+            if os.path.exists(picPath):
+                os.remove(picPath)
+                setPic(self.dateString)
 
         def setPic(date):
             if self.pic != None:
                 vbox1.remove(self.pic)
                 vbox1.remove(hbox2)
-            if date in self.db:
+            picPath = os.path.expanduser('~/.photostory/photos/') + str(date) + ".png"
+            if os.path.exists(picPath):
                 self.pic = gtk.Image()
-                self.pic.set_from_file(self.db[date])
+                self.pic.set_from_file(picPath)
                 takeBut.set_label("Photo taken for this day.")
                 takeBut.set_sensitive(False)
+                deleteBut.set_sensitive(True)
             else: 
-                if date == todayDate:
+                if date == self.todayDate:
                     takeBut.set_label("Take today's photo")
                     takeBut.set_sensitive(True)
                 else:
@@ -212,6 +194,7 @@ class Main:
                 self.pic.set_justify(gtk.JUSTIFY_CENTER)
                 self.pic.set_markup("<span size='54000'>No Photo\nToday</span>");
                 self.pic.set_size_request(640, 480)
+                deleteBut.set_sensitive(False)
             vbox1.pack_start(self.pic)
             vbox1.pack_start(hbox2)
             vbox1.show_all()
@@ -233,25 +216,33 @@ class Main:
         filmBut.connect("clicked", movify)
         deleteBut = gtk.Button(label="Delete Photo")
         deleteBut.connect("clicked", deletePic)
-        shareBut = gtk.Button(label="Share Video")
+#        shareBut = gtk.Button(label="Share Video")
         hbox2 = gtk.HBox(homogeneous=True)
         aboutBut = gtk.Button(label="About")
         aboutBut.connect("clicked", about)
 
         cal = gtk.Calendar()
-        todayDate = cal.get_date()
+        self.todayDateTuple = cal.get_date()
+        self.todayDateTuple = list(self.todayDateTuple)
+        self.todayDateTuple[1] = self.todayDateTuple[1] + 1
+        if (self.todayDateTuple[1] < 10):
+            self.todayDateTuple[1] = "0" + str(self.todayDateTuple[1])
+        if (self.todayDateTuple[2] < 10):
+            self.todayDateTuple[2] = "0" + str(self.todayDateTuple[2])
         cal.connect("day-selected", chooseDay)
+        self.todayDate = str(self.todayDateTuple[0]) + "-" + str(self.todayDateTuple[1]) + "-" + str(self.todayDateTuple[2])
+        self.dateString = self.todayDate
 
         takeBut = gtk.Button(label="Take today's photo")
         takeBut.connect("clicked", capture)
 
-        setPic(todayDate)
+        setPic(self.todayDate)
 
         self.win.add(hbox)
         hbox.pack_start(vbox1, expand=False)
         hbox2.pack_start(filmBut, expand=False)
         hbox2.pack_start(deleteBut, expand=False)
-        #hbox2.pack_start(shareBut)
+#        hbox2.pack_start(shareBut)
         hbox2.pack_start(aboutBut)
         vbox2.pack_start(movie)
         vbox2.pack_start(cal, expand=False, padding=25)
