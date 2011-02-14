@@ -66,6 +66,8 @@ class Main:
                 movRes = movPicker.run()
                 if movRes == -6:
                     self.movPath = movPicker.get_filename()
+                    if os.path.exists(self.movPath):
+                        os.remove(self.movPath)
                     movPicker.destroy()
 
             def movGen(movButton):
