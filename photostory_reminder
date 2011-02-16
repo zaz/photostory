@@ -1,31 +1,27 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-#Photostory 1.0 - Reminder
-#by Joel Auterson (joel.auterson@googlemail.com)
-#http://www.launchpad.net/photostory
+# Reminder Program for Photostory 1.0
+# Joel Auterson <joel.auterson@googlemail.com>
+# http://launchpad.net/photostory
 
-import os.path
-import time
-import pynotify
+import os.path, time, pynotify
 
-time.sleep(10)
+DB = '~/.photostory/photos/'
+ICON = 'photostory'
 
-year = time.localtime()[0]
-month = time.localtime()[1]
-day = time.localtime()[2]
+year, month, day = time.localtime()[:3]
+short_filename = '{0}{1:04d}-{2:02d}-{3:02d}.png'.format(DB, year, month, day)
+long_filename = os.path.expanduser(short_filename)
 
-if (month < 10):
-    month = "0" + str(month)
-if (day < 10):
-    day = "0" + str(day)
-
-dateString = str(year) + "-" + str(month) + "-" + str(day)
-
-if os.path.exists(os.path.expanduser('~/.photostory/photos/') + dateString + ".png"):
-    print 'File exists.'
+if os.path.exists(long_filename):
+    print 'Photograph taken for today: {0}'.format(short_filename)
 else:
-    print 'File does not exist.'
-    uri = "file://" + os.path.abspath(os.path.curdir) + "/photostory.svg"
+    print 'Photograph not taken for today: {0}'.format(short_filename)
+    notification = pynotify.Notification('Photostory',
+                                       'Photograph not taken for today.', ICON)
 
-    n = pynotify.Notification("Photostory", "You haven't taken a picture today!", uri)
-    n.show()
+if not os.path.exists(DB):
+    notification = pynotify.Notification('Photostory',
+                                         'Cannot locate photo database.', ICON)
+
+notification.show()
