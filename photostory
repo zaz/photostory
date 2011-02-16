@@ -1,26 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-#Photostory 0.95
-#by Joel Auterson (joel.auterson@googlemail.com)
-#http://www.launchpad.net/photostory
+# Photostory 1.0
+# Joel Auterson <joel.auterson@googlemail.com>
+# http://launchpad.net/photostory
 
-import pygst
+import time, os, glib, glob, shutil, gtk, gst, pygtk, pygst
 pygst.require("0.10")
-import gst
-import pygtk
-import gtk
-import time
-import os.path
-import os
-from threading import Timer
-import glib
-import glob
-import shutil
 
 class Main:
-
     def __init__(self):
-
         pipeline = None
         xvimagesink = None
         movie = None
@@ -60,7 +48,6 @@ class Main:
                 dAbout.destroy()
 
         def movify(filmBut):
-
             def movPick(movFileButton):
                 movPicker = gtk.FileChooserDialog(title="Choose a save location", parent=movDia, action=gtk.FILE_CHOOSER_ACTION_SAVE, buttons=(("Save Here", -6)), backend=None)
                 movRes = movPicker.run()
@@ -71,7 +58,6 @@ class Main:
                     movPicker.destroy()
 
             def movGen(movButton):
-
                 movDia.destroy()
 
                 #Move images to /tmp directory
@@ -140,7 +126,6 @@ class Main:
             movDia.show_all()
 
         def capture(takeBut):
-
             def takePic():
                 pipeline.set_state(gst.STATE_NULL)
                 stillPipe = gst.Pipeline("stillPipe")
