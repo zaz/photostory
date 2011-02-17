@@ -5,7 +5,7 @@ from distutils.core import setup
 import os
 
 setup(name='Photostory',
-      version='0.9',
+      version='1.0',
       description='Photostory lets you use your webcam to photo yourself\
  every day, then compile them into a video.',
       #long_description='''XXX''',
