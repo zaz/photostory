@@ -17,7 +17,7 @@ setup(name='Photostory',
                 'video'],
       url='http://launchpad.net/photostory',
       license='GNU GPL v3',
-      scripts=['photostory'],
+      scripts=['photostory', 'photostory_reminder'],
       data_files=[
                   ('share/applications/', ['photostory.desktop']),
                   ('share/icons/hicolor/scalable/apps', ['photostory.svg']),
