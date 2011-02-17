@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+# Reminder Program for Photostory 1.0
+# Joel Auterson <joel.auterson@googlemail.com>
+# http://launchpad.net/photostory
+
+import os.path, time, pynotify
+
+DB = '~/.photostory/photos/'
+ICON = 'photostory'
+
+year, month, day = time.localtime()[:3]
+short_filename = '{0}{1:04d}-{2:02d}-{3:02d}.png'.format(DB, year, month, day)
+long_filename = os.path.expanduser(short_filename)
+
+if os.path.exists(long_filename):
+    print 'Photograph taken for today: {0}'.format(short_filename)
+else:
+    print 'Photograph not taken for today: {0}'.format(short_filename)
+    notification = pynotify.Notification('Photostory',
+                                       'Photograph not taken for today.', ICON)
+
+if not os.path.exists(DB):
+    notification = pynotify.Notification('Photostory',
+                                         'Cannot locate photo database.', ICON)
+
+notification.show()
