@@ -23,14 +23,8 @@ class Main:
             os.makedirs(os.path.expanduser('~/.photostory/photos'))
 
         def chooseDay(cal):
-            dateTuple = cal.get_date()
-            dateTuple = list(dateTuple)
-            dateTuple[1] = dateTuple[1] + 1
-            if (dateTuple[1] < 10):
-                dateTuple[1] = "0" + str(dateTuple[1])
-            if (dateTuple[2] < 10):
-                dateTuple[2] = "0" + str(dateTuple[2])
-            self.dateString = str(dateTuple[0]) + "-" + str(dateTuple[1]) + "-" + str(dateTuple[2])
+            year, month, day = cal.get_date()
+            self.dateString = '{0:04d}-{1:02d}-{2:02d}'.format(year, month, day)
             setPic(self.dateString)
 
         def closedown(win):
