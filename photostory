@@ -4,8 +4,9 @@
 # Joel Auterson <joel.auterson@googlemail.com>
 # http://launchpad.net/photostory
 
-import time, os, glib, glob, shutil, gtk, gst, pygtk, pygst
+import time, os, glib, glob, shutil, gtk, pygtk, pygst
 pygst.require("0.10")
+import gst
 
 class Main:
     def __init__(self):
