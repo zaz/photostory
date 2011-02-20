@@ -22,6 +22,7 @@ photostory_0.9_to_1.0.py>.',
       license='GNU GPL v3',
       scripts=['photostory', 'photostory_reminder'],
       data_files=[
+                  ('/etc/xdg/autostart/', ['photostory_reminder.desktop']),
                   ('share/applications/', ['photostory.desktop']),
                   ('share/icons/hicolor/scalable/apps', ['photostory.svg']),
                  ],
