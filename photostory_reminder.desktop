@@ -6,4 +6,4 @@ Exec=sh -c "sleep 10; photostory_reminder"
 Icon=photostory
 Terminal=false
 Categories=AudioVideo;Video
-X-GNOME-Autostart-enabled=false
+X-GNOME-Autostart-enabled=true
