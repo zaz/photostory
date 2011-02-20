@@ -13,7 +13,7 @@ setup(name='Photostory',
  can be downloaded from <http://launchpad.net/photostory/trunk/0.9/+download/\
 photostory_0.9_to_1.0.py>.',
       author='Photostory Team',
-      author_email='photostory-team@lists.launchpad.net',
+      author_email='photostory@lists.launchpad.net',
       maintainer='Joel Auterson',
       maintainer_email='joel.auterson@googlemail.com',
       keywords=['photo', 'story', 'daily', 'picture', 'webcam', 'story',
