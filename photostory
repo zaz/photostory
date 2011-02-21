@@ -204,20 +204,12 @@ class Main:
         aboutBut.connect("clicked", about)
 
         cal = gtk.Calendar()
-        self.todayDateTuple = cal.get_date()
-        self.todayDateTuple = list(self.todayDateTuple)
-        self.todayDateTuple[1] = self.todayDateTuple[1] + 1
-        if (self.todayDateTuple[1] < 10):
-            self.todayDateTuple[1] = "0" + str(self.todayDateTuple[1])
-        if (self.todayDateTuple[2] < 10):
-            self.todayDateTuple[2] = "0" + str(self.todayDateTuple[2])
         cal.connect("day-selected", chooseDay)
-        self.todayDate = str(self.todayDateTuple[0]) + "-" + str(self.todayDateTuple[1]) + "-" + str(self.todayDateTuple[2])
-        self.dateString = self.todayDate
-
+        year, month, day = self.todayDateTuple = cal.get_date()
+        self.dateString = '{0:04d}-{1:02d}-{2:02d}'.format(year, month+1, day)
+        self.todayDate = self.dateString
         takeBut = gtk.Button(label="Take today's photo")
         takeBut.connect("clicked", capture)
-
         setPic(self.todayDate)
 
         self.win.add(hbox)
