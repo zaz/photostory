@@ -8,13 +8,17 @@ import time, os, glib, glob, shutil, gtk, pygtk, pygst
 pygst.require("0.10")
 import gst
 import gettext
-gettext.install('photostory','locale')
+import locale
+locale.setlocale(locale.LC_ALL, '')
+gettext.install('photostory', unicode=True)
+import locale
 
 class Main:
     def __init__(self):
         pipeline = None
         xvimagesink = None
         movie = None
+	is_playing = False
         self.movPath = None
         self.adj = gtk.Adjustment(5, 1, 10, 1)
         self.pic=None
@@ -123,9 +127,10 @@ class Main:
             movDia.show_all()
 
         def capture(takeBut):
-            def takePic():
-                pipeline.set_state(gst.STATE_NULL)
-                stillPipe = gst.Pipeline("stillPipe")
+	    self.stillPipe = None
+
+	    def prepare():
+		self.stillPipe = gst.Pipeline("stillPipe")
                 stillCam = gst.element_factory_make("v4l2src", "stillPipe")
                 stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
                 stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
@@ -134,20 +139,36 @@ class Main:
                 pngEnc = gst.element_factory_make("pngenc", "pngenc")
                 filesink = gst.element_factory_make("filesink", "filesink")
                 filesink.set_property("location", os.path.expanduser('~/.photostory/photos/') + self.dateString + ".png")
-                stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+                self.stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
                 gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-                stillPipe.set_state(gst.STATE_PLAYING)
-                time.sleep(3)
-                stillPipe.set_state(gst.STATE_NULL)
-                xvimagesink.set_xwindow_id(movie.window.xid)
-                pipeline.set_state(gst.STATE_PLAYING)
-                setPic(self.todayDate)
-
+		bus = self.stillPipe.get_bus()
+		bus.add_signal_watch()
+		bus.connect("message", message_handler)
+		            
+	    def takePic():
+                pipeline.set_state(gst.STATE_NULL)
+                self.stillPipe.set_state(gst.STATE_PLAYING)
+		
             def countdown(n = 3):
                 self.pic.set_markup("<span size='54000'>" + str(n) + "</span>")
                 if n == 0: takePic()
                 else: glib.timeout_add(1000, countdown, n-1)
 
+	    def message_handler(bus, message):
+		msgType = message.type
+		if msgType == gst.MESSAGE_EOS:
+		    self.stillPipe.set_state(gst.STATE_NULL)
+	            xvimagesink.set_xwindow_id(movie.window.xid)
+                    pipeline.set_state(gst.STATE_PLAYING)
+                    setPic(self.todayDate)
+		if msgType == gst.MESSAGE_ERROR:
+		    err, debug = message.parse_error()
+	    	    print "Error: %s" % err, debug
+		if msgType == gst.MESSAGE_WARNING:
+		    err, debug = message.parse_error()
+	    	    print "Warning: %s" % err, debug
+	    
+            prepare()
             countdown()
 
         def deletePic(deleteBut):
