@@ -8,6 +8,8 @@ import time, os, sys, glib, glob, shutil, gtk, pygtk, pygst
 pygst.require("0.10")
 import gst
 
+DB = os.path.expanduser('~/.photostory/photos/')
+
 class Main:
     def __init__(self):
         pipeline = None
@@ -131,7 +133,7 @@ class Main:
                 ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
                 pngEnc = gst.element_factory_make("pngenc", "pngenc")
                 filesink = gst.element_factory_make("filesink", "filesink")
-                filesink.set_property("location", os.path.expanduser('~/.photostory/photos/') + self.dateString + ".png")
+                filesink.set_property("location", DB + self.dateString + ".png")
                 stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
                 gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
                 stillPipe.set_state(gst.STATE_PLAYING)
@@ -149,7 +151,7 @@ class Main:
             countdown()
 
         def deletePic(deleteBut):
-            picPath = os.path.expanduser('~/.photostory/photos/') + self.dateString + ".png"
+            picPath = DB + self.dateString + ".png"
             if os.path.exists(picPath):
                 os.remove(picPath)
                 setPic(self.dateString)
@@ -158,7 +160,7 @@ class Main:
             if self.pic != None:
                 vbox1.remove(self.pic)
                 vbox1.remove(hbox2)
-            picPath = os.path.expanduser('~/.photostory/photos/') + str(date) + ".png"
+            picPath = DB + str(date) + ".png"
             if os.path.exists(picPath):
                 self.pic = gtk.Image()
                 self.pic.set_from_file(picPath)
