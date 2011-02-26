@@ -4,7 +4,7 @@
 # Joel Auterson <joel.auterson@googlemail.com>
 # http://launchpad.net/photostory
 
-import time, os, glib, glob, shutil, gtk, pygtk, pygst
+import time, os, sys, glib, glob, shutil, gtk, pygtk, pygst
 pygst.require("0.10")
 import gst
 
@@ -189,9 +189,9 @@ class Main:
         self.win.set_default_size(900, 600)
         self.win.set_resizable(False)
         self.win.set_title("Photostory")
-        if os.path.exists("photostory.svg"):
-            self.win.set_icon_from_file("photostory.svg")
-        elif os.path.exists("/usr/share/icons/hicolor/scalable/apps/photostory.svg"):
+        if os.path.exists(sys.path[0] + "/photostory.svg"): #For Development
+            self.win.set_icon_from_file(sys.path[0] + "/photostory.svg")
+        elif os.path.exists("/usr/share/icons/hicolor/scalable/apps/photostory.svg"): #For the packaged program
             self.win.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/photostory.svg")
         movie = gtk.DrawingArea()
         movie.set_size_request(320, 240)
