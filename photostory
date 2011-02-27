@@ -4,7 +4,7 @@
 # Joel Auterson <joel.auterson@googlemail.com>
 # http://launchpad.net/photostory
 
-import time, os, sys, glib, glob, shutil, gtk, pygtk, pygst
+import time, datetime, os, sys, glib, glob, shutil, gtk, pygtk, pygst
 pygst.require("0.10")
 import gst
 import gettext
@@ -118,16 +118,10 @@ class Main:
                 numPhotos = len(photosList)
                 fps = self.adj.get_value()
                 seconds = (int)(numPhotos*(1/fps))
-
-                hours = seconds / 3600
-                seconds -= 3600*hours
-                minutes = seconds / 60
-                seconds -= 60*minutes
-                time =  "%02d:%02d:%02d" % (hours, minutes, seconds)
+                time = str(datetime.timedelta(seconds=seconds))
                 timeLabel.set_markup("Estimated Time: " + time)
 
             #FPS Slider
-            
             movSliderBox = gtk.HBox(homogeneous=False, spacing=3)
             movSliderLabel = gtk.Label("FPS:")
             movSlider = gtk.HScale(self.adj)
