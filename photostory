@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # Photostory 1.0
 # Joel Auterson <joel.auterson@googlemail.com>
@@ -7,6 +7,11 @@
 import time, os, sys, glib, glob, shutil, gtk, pygtk, pygst
 pygst.require("0.10")
 import gst
+import gettext
+import locale
+locale.setlocale(locale.LC_ALL, '')
+gettext.install('photostory', unicode=True)
+import locale
 
 DB = os.path.expanduser('~/.photostory/photos/')
 
@@ -15,6 +20,7 @@ class Main:
         pipeline = None
         xvimagesink = None
         movie = None
+	is_playing = False
         self.movPath = None
         self.adj = gtk.Adjustment(5, 1, 10, 1)
         self.pic=None
@@ -36,7 +42,7 @@ class Main:
         def about(aboutBut):
             dAbout = gtk.AboutDialog()
             dAbout.set_name("Photostory")
-            dAbout.set_comments("Photostory is an application that lets you tell the story of your life in photos, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet.")
+            dAbout.set_comments(_("Photostory is an application that lets you tell the story of your life in photos, by taking a snapshot of you each day. You can then make these into a video to share with friends or on the internet."))
             dAbout.set_artists(("Josh Brown", ""))
             dAbout.set_authors(("Joel Auterson", "David Turner", "Josh Brown"))
             dAbout.set_website("http://launchpad.net/photostory")
@@ -46,7 +52,7 @@ class Main:
 
         def movify(filmBut):
             def movPick(movFileButton):
-                movPicker = gtk.FileChooserDialog(title="Choose a save location", parent=movDia, action=gtk.FILE_CHOOSER_ACTION_SAVE, buttons=(("Save Here", -6)), backend=None)
+                movPicker = gtk.FileChooserDialog(title=_("Choose a save location"), parent=movDia, action=gtk.FILE_CHOOSER_ACTION_SAVE, buttons=((_("Save Here"), -6)), backend=None)
                 movRes = movPicker.run()
                 if movRes == -6:
                     self.movPath = movPicker.get_filename()
@@ -97,13 +103,13 @@ class Main:
                 shutil.rmtree('/tmp/photostory')
 
             movDia = gtk.Window(gtk.WINDOW_TOPLEVEL)
-            movDia.set_title("Create Film")
+            movDia.set_title(_("Create Film"))
             movDia.set_resizable(False)
             filmBut.set_sensitive(False)
             movVbox = gtk.VBox(homogeneous=False, spacing=2)
-            movLabel = gtk.Label("Here you can create a video made up of all your photos. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n")
-            movFileButton = gtk.Button(label="Choose a location")
-            movButton = gtk.Button(label="Create")
+            movLabel = gtk.Label(_("Here you can create a video made up of all your photos. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n"))
+            movFileButton = gtk.Button(label=_("Choose a location"))
+            movButton = gtk.Button(label=_("Create"))
 
             #FPS Slider
             movSliderBox = gtk.HBox(homogeneous=False, spacing=3)
@@ -123,9 +129,10 @@ class Main:
             movDia.show_all()
 
         def capture(takeBut):
-            def takePic():
-                pipeline.set_state(gst.STATE_NULL)
-                stillPipe = gst.Pipeline("stillPipe")
+	    self.stillPipe = None
+
+	    def prepare():
+		self.stillPipe = gst.Pipeline("stillPipe")
                 stillCam = gst.element_factory_make("v4l2src", "stillPipe")
                 stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
                 stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
@@ -133,21 +140,36 @@ class Main:
                 ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
                 pngEnc = gst.element_factory_make("pngenc", "pngenc")
                 filesink = gst.element_factory_make("filesink", "filesink")
-                filesink.set_property("location", DB + self.dateString + ".png")
-                stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+                self.stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
                 gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-                stillPipe.set_state(gst.STATE_PLAYING)
-                time.sleep(1)
-                stillPipe.set_state(gst.STATE_NULL)
-                xvimagesink.set_xwindow_id(movie.window.xid)
-                pipeline.set_state(gst.STATE_PLAYING)
-                setPic(self.todayDate)
-
+		bus = self.stillPipe.get_bus()
+		bus.add_signal_watch()
+		bus.connect("message", message_handler)
+		            
+	    def takePic():
+                pipeline.set_state(gst.STATE_NULL)
+                self.stillPipe.set_state(gst.STATE_PLAYING)
+		
             def countdown(n = 3):
                 self.pic.set_markup("<span size='54000'>" + str(n) + "</span>")
                 if n == 0: takePic()
                 else: glib.timeout_add(1000, countdown, n-1)
 
+	    def message_handler(bus, message):
+		msgType = message.type
+		if msgType == gst.MESSAGE_EOS:
+		    self.stillPipe.set_state(gst.STATE_NULL)
+	            xvimagesink.set_xwindow_id(movie.window.xid)
+                    pipeline.set_state(gst.STATE_PLAYING)
+                    setPic(self.todayDate)
+		if msgType == gst.MESSAGE_ERROR:
+		    err, debug = message.parse_error()
+	    	    print "Error: %s" % err, debug
+		if msgType == gst.MESSAGE_WARNING:
+		    err, debug = message.parse_error()
+	    	    print "Warning: %s" % err, debug
+	    
+            prepare()
             countdown()
 
         def deletePic(deleteBut):
@@ -164,19 +186,19 @@ class Main:
             if os.path.exists(picPath):
                 self.pic = gtk.Image()
                 self.pic.set_from_file(picPath)
-                takeBut.set_label("Photo taken for this day.")
+                takeBut.set_label(_("Photo taken for this day."))
                 takeBut.set_sensitive(False)
                 deleteBut.set_sensitive(True)
             else: 
                 if date == self.todayDate:
-                    takeBut.set_label("Take today's photo")
+                    takeBut.set_label(_("Take today's photo"))
                     takeBut.set_sensitive(True)
                 else:
-                    takeBut.set_label("Take today's photo")
+                    takeBut.set_label(_("Take today's photo"))
                     takeBut.set_sensitive(False)
                 self.pic = gtk.Label()
                 self.pic.set_justify(gtk.JUSTIFY_CENTER)
-                self.pic.set_markup("<span size='54000'>No Photo\nToday</span>");
+                self.pic.set_markup(_("<span size='54000'>No Photo\nToday</span>"));
                 self.pic.set_size_request(640, 480)
                 deleteBut.set_sensitive(False)
             vbox1.pack_start(self.pic)
@@ -198,13 +220,13 @@ class Main:
         hbox = gtk.HBox(homogeneous=False, spacing=3)
         vbox1 = gtk.VBox(homogeneous=False)
         vbox2 = gtk.VBox(homogeneous = False)   
-        filmBut = gtk.Button(label="Create Film")
+        filmBut = gtk.Button(label=_("Create Film"))
         filmBut.connect("clicked", movify)
-        deleteBut = gtk.Button(label="Delete Photo")
+        deleteBut = gtk.Button(label=_("Delete Photo"))
         deleteBut.connect("clicked", deletePic)
 #        shareBut = gtk.Button(label="Share Video")
         hbox2 = gtk.HBox(homogeneous=True)
-        aboutBut = gtk.Button(label="About")
+        aboutBut = gtk.Button(label=_("About"))
         aboutBut.connect("clicked", about)
 
         cal = gtk.Calendar()
@@ -212,7 +234,7 @@ class Main:
         year, month, day = self.todayDateTuple = cal.get_date()
         self.dateString = '{0:04d}-{1:02d}-{2:02d}'.format(year, month+1, day)
         self.todayDate = self.dateString
-        takeBut = gtk.Button(label="Take today's photo")
+        takeBut = gtk.Button(label=_("Take today's photo"))
         takeBut.connect("clicked", capture)
         setPic(self.todayDate)
 
