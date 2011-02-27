@@ -231,12 +231,16 @@ class Main:
             if self.cameraStatus == gst.STATE_CHANGE_FAILURE:#Check if there actually is a camera connected
                 vbox2.remove(self.movie)
                 self.movie = gtk.VBox(homogeneous=False, spacing=3)
-                noCameraImage = gtk.Image()
-                self.movie.pack_start(noCameraImage, expand=True)
-                self.movie.pack_start(gtk.Label("Camera not Connected"), expand=False)
+                noCameraLabel = gtk.Label()
+                noCameraLabel.set_justify(gtk.JUSTIFY_CENTER)
+                noCameraLabel.set_markup(_("<span size='32000'>No Camera\nConnected</span>"));
                 connectBut = gtk.Button("Connect Camera")
                 connectBut.connect("clicked", connectCamera)
+                
+                self.movie.pack_start(gtk.Label(), expand=True) #Empty Space
+                self.movie.pack_start(noCameraLabel, expand=False)
                 self.movie.pack_start(connectBut, expand=False)
+                self.movie.pack_start(gtk.Label(), expand=True) #Empty Space
                 vbox2.pack_start(self.movie)
                 vbox2.reorder_child(self.movie, 0)
                 takeBut.set_sensitive(False)
