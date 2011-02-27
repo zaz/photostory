@@ -20,7 +20,7 @@ class Main:
         pipeline = None
         xvimagesink = None
         movie = None
-	is_playing = False
+        is_playing = False
         self.movPath = None
         self.adj = gtk.Adjustment(5, 1, 10, 1)
         self.pic=None
@@ -129,46 +129,46 @@ class Main:
             movDia.show_all()
 
         def capture(takeBut):
-	    self.stillPipe = None
+            self.stillPipe = None
 
-	    def prepare():
-		self.stillPipe = gst.Pipeline("stillPipe")
-                stillCam = gst.element_factory_make("v4l2src", "stillPipe")
-                stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
-                stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
-                stillFilt.set_property("caps", stillCap)
-                ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
-                pngEnc = gst.element_factory_make("pngenc", "pngenc")
-                filesink = gst.element_factory_make("filesink", "filesink")
-                self.stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-                gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-		bus = self.stillPipe.get_bus()
-		bus.add_signal_watch()
-		bus.connect("message", message_handler)
-		            
-	    def takePic():
-                pipeline.set_state(gst.STATE_NULL)
-                self.stillPipe.set_state(gst.STATE_PLAYING)
-		
+        def prepare():
+            self.stillPipe = gst.Pipeline("stillPipe")
+            stillCam = gst.element_factory_make("v4l2src", "stillPipe")
+            stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
+            stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
+            stillFilt.set_property("caps", stillCap)
+            ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
+            pngEnc = gst.element_factory_make("pngenc", "pngenc")
+            filesink = gst.element_factory_make("filesink", "filesink")
+            self.stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+            gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+            bus = self.stillPipe.get_bus()
+            bus.add_signal_watch()
+            bus.connect("message", message_handler)
+
+        def takePic():
+            pipeline.set_state(gst.STATE_NULL)
+            self.stillPipe.set_state(gst.STATE_PLAYING)
+
             def countdown(n = 3):
                 self.pic.set_markup("<span size='54000'>" + str(n) + "</span>")
                 if n == 0: takePic()
                 else: glib.timeout_add(1000, countdown, n-1)
 
-	    def message_handler(bus, message):
-		msgType = message.type
-		if msgType == gst.MESSAGE_EOS:
-		    self.stillPipe.set_state(gst.STATE_NULL)
-	            xvimagesink.set_xwindow_id(movie.window.xid)
+            def message_handler(bus, message):
+                msgType = message.type
+                if msgType == gst.MESSAGE_EOS:
+                    self.stillPipe.set_state(gst.STATE_NULL)
+                    xvimagesink.set_xwindow_id(movie.window.xid)
                     pipeline.set_state(gst.STATE_PLAYING)
                     setPic(self.todayDate)
-		if msgType == gst.MESSAGE_ERROR:
-		    err, debug = message.parse_error()
-	    	    print "Error: %s" % err, debug
-		if msgType == gst.MESSAGE_WARNING:
-		    err, debug = message.parse_error()
-	    	    print "Warning: %s" % err, debug
-	    
+                if msgType == gst.MESSAGE_ERROR:
+                    err, debug = message.parse_error()
+                    print "Error: %s" % err, debug
+                if msgType == gst.MESSAGE_WARNING:
+                    err, debug = message.parse_error()
+                    print "Warning: %s" % err, debug
+
             prepare()
             countdown()
 
