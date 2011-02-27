@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 # Photostory 1.0
 # Joel Auterson <joel.auterson@googlemail.com>
@@ -17,10 +17,11 @@ DB = os.path.expanduser('~/.photostory/photos/')
 
 class Main:
     def __init__(self):
-        pipeline = None
-        xvimagesink = None
-        movie = None
-        is_playing = False
+        self.cameraStatus = gst.STATE_CHANGE_FAILURE
+        self.pipeline = None
+        self.xvimagesink = None
+        self.camera = None
+        self.movie = None
         self.movPath = None
         self.adj = gtk.Adjustment(5, 1, 10, 1)
         self.pic=None
@@ -131,24 +132,25 @@ class Main:
         def capture(takeBut):
             self.stillPipe = None
 
-        def prepare():
-            self.stillPipe = gst.Pipeline("stillPipe")
-            stillCam = gst.element_factory_make("v4l2src", "stillPipe")
-            stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
-            stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
-            stillFilt.set_property("caps", stillCap)
-            ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
-            pngEnc = gst.element_factory_make("pngenc", "pngenc")
-            filesink = gst.element_factory_make("filesink", "filesink")
-            self.stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-            gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
-            bus = self.stillPipe.get_bus()
-            bus.add_signal_watch()
-            bus.connect("message", message_handler)
+            def prepare():
+                self.stillPipe = gst.Pipeline("stillPipe")
+                stillCam = gst.element_factory_make("v4l2src", "stillPipe")
+                stillFilt = gst.element_factory_make("capsfilter", "stillFilt")
+                stillCap = gst.Caps("video/x-raw-yuv,width=640,height=480")
+                stillFilt.set_property("caps", stillCap)
+                ffmpegcolorspace = gst.element_factory_make("ffmpegcolorspace", "ffmpegcolorspace")
+                pngEnc = gst.element_factory_make("pngenc", "pngenc")
+                filesink = gst.element_factory_make("filesink", "filesink")
+                filesink.set_property("location", DB + self.dateString + ".png")
+                self.stillPipe.add(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+                gst.element_link_many(stillCam, stillFilt, ffmpegcolorspace, pngEnc, filesink)
+                bus = self.stillPipe.get_bus()
+                bus.add_signal_watch()
+                bus.connect("message", message_handler)
 
-        def takePic():
-            pipeline.set_state(gst.STATE_NULL)
-            self.stillPipe.set_state(gst.STATE_PLAYING)
+            def takePic():
+                self.pipeline.set_state(gst.STATE_NULL)
+                self.stillPipe.set_state(gst.STATE_PLAYING)
 
             def countdown(n = 3):
                 self.pic.set_markup("<span size='54000'>" + str(n) + "</span>")
@@ -159,8 +161,8 @@ class Main:
                 msgType = message.type
                 if msgType == gst.MESSAGE_EOS:
                     self.stillPipe.set_state(gst.STATE_NULL)
-                    xvimagesink.set_xwindow_id(movie.window.xid)
-                    pipeline.set_state(gst.STATE_PLAYING)
+                    self.xvimagesink.set_xwindow_id(self.movie.window.xid)
+                    self.pipeline.set_state(gst.STATE_PLAYING)
                     setPic(self.todayDate)
                 if msgType == gst.MESSAGE_ERROR:
                     err, debug = message.parse_error()
@@ -168,7 +170,6 @@ class Main:
                 if msgType == gst.MESSAGE_WARNING:
                     err, debug = message.parse_error()
                     print "Warning: %s" % err, debug
-
             prepare()
             countdown()
 
@@ -191,8 +192,9 @@ class Main:
                 deleteBut.set_sensitive(True)
             else: 
                 if date == self.todayDate:
-                    takeBut.set_label(_("Take today's photo"))
-                    takeBut.set_sensitive(True)
+                    takeBut.set_label("Take today's photo")
+                    if self.cameraStatus != gst.STATE_CHANGE_FAILURE:
+                        takeBut.set_sensitive(True)
                 else:
                     takeBut.set_label(_("Take today's photo"))
                     takeBut.set_sensitive(False)
@@ -204,6 +206,47 @@ class Main:
             vbox1.pack_start(self.pic)
             vbox1.pack_start(hbox2)
             vbox1.show_all()
+            
+        def connectCamera(button):
+            vbox2.remove(self.movie)
+            self.movie = gtk.DrawingArea()
+            self.movie.set_size_request(320, 240)
+            vbox2.pack_start(self.movie)
+            vbox2.reorder_child(self.movie, 0)
+            #Pipeline stuff - feed
+            self.pipeline = gst.Pipeline("mypipeline")
+
+            self.camera = gst.element_factory_make("v4l2src", "camera")
+            self.camera.set_property("device", "/dev/video0")
+
+            caps = gst.Caps("video/x-raw-yuv,width=640,height=480,framerate=30/1")
+            filt = gst.element_factory_make("capsfilter", "filter")
+            filt.set_property("caps", caps)
+            self.xvimagesink = gst.element_factory_make("xvimagesink", "sink")
+
+            self.pipeline.add(self.camera, filt, self.xvimagesink)
+            gst.element_link_many(self.camera, filt, self.xvimagesink)
+            self.cameraStatus = self.pipeline.set_state(gst.STATE_PLAYING)
+            
+            if self.cameraStatus == gst.STATE_CHANGE_FAILURE:#Check if there actually is a camera connected
+                vbox2.remove(self.movie)
+                self.movie = gtk.VBox(homogeneous=False, spacing=3)
+                noCameraImage = gtk.Image()
+                self.movie.pack_start(noCameraImage, expand=True)
+                self.movie.pack_start(gtk.Label("Camera not Connected"), expand=False)
+                connectBut = gtk.Button("Connect Camera")
+                connectBut.connect("clicked", connectCamera)
+                self.movie.pack_start(connectBut, expand=False)
+                vbox2.pack_start(self.movie)
+                vbox2.reorder_child(self.movie, 0)
+                takeBut.set_sensitive(False)
+            else:
+                self.pipeline.set_state(gst.STATE_NULL)
+                self.xvimagesink.set_xwindow_id(self.movie.window.xid)
+                self.pipeline.set_state(gst.STATE_PLAYING)
+                takeBut.set_sensitive(True)
+            self.win.show_all()
+            
 
         #Interface
         self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -215,8 +258,8 @@ class Main:
             self.win.set_icon_from_file(sys.path[0] + "/photostory.svg")
         elif os.path.exists("/usr/share/icons/hicolor/scalable/apps/photostory.svg"): #For the packaged program
             self.win.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/photostory.svg")
-        movie = gtk.DrawingArea()
-        movie.set_size_request(320, 240)
+        self.movie = gtk.DrawingArea()
+        self.movie.set_size_request(320, 240)
         hbox = gtk.HBox(homogeneous=False, spacing=3)
         vbox1 = gtk.VBox(homogeneous=False)
         vbox2 = gtk.VBox(homogeneous = False)   
@@ -244,31 +287,12 @@ class Main:
         hbox2.pack_start(deleteBut, expand=False)
 #        hbox2.pack_start(shareBut)
         hbox2.pack_start(aboutBut)
-        vbox2.pack_start(movie)
+        vbox2.pack_start(self.movie)
         vbox2.pack_start(cal, expand=False, padding=25)
         vbox2.pack_start(takeBut, expand=False)
         hbox.pack_start(vbox2)
-
         self.win.show_all()
-
-        #Pipeline stuff - feed
-        pipeline = gst.Pipeline("mypipeline")
-
-        camera = gst.element_factory_make("v4l2src", "camera")
-        camera.set_property("device", "/dev/video0")
-
-        caps = gst.Caps("video/x-raw-yuv,width=640,height=480,framerate=30/1")
-        filt = gst.element_factory_make("capsfilter", "filter")
-        filt.set_property("caps", caps)
-
-        xvimagesink = gst.element_factory_make("xvimagesink", "sink")
-
-        pipeline.add(camera, filt, xvimagesink)
-        gst.element_link_many(camera, filt, xvimagesink)
-
-        xvimagesink.set_xwindow_id(movie.window.xid)
-
-        pipeline.set_state(gst.STATE_PLAYING)
+        connectCamera(None)
 
 start=Main()
 gtk.main()
