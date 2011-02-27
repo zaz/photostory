@@ -111,18 +111,37 @@ class Main:
             movLabel = gtk.Label(_("Here you can create a video made up of all your photos. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n"))
             movFileButton = gtk.Button(label=_("Choose a location"))
             movButton = gtk.Button(label=_("Create"))
+            
+            def updateEstimate(slider):
+                photosList = glob.glob(os.path.expanduser("~/.photostory/photos/") + "*.png")
+                photosList = sorted(photosList)
+                numPhotos = len(photosList)
+                fps = self.adj.get_value()
+                seconds = (int)(numPhotos*(1/fps))
+
+                hours = seconds / 3600
+                seconds -= 3600*hours
+                minutes = seconds / 60
+                seconds -= 60*minutes
+                time =  "%02d:%02d:%02d" % (hours, minutes, seconds)
+                timeLabel.set_markup("Estimated Time: " + time)
 
             #FPS Slider
+            
             movSliderBox = gtk.HBox(homogeneous=False, spacing=3)
             movSliderLabel = gtk.Label("FPS:")
             movSlider = gtk.HScale(self.adj)
+            movSlider.connect("value-changed", updateEstimate)
             movSlider.set_digits(0)
             movSliderBox.pack_start(movSliderLabel, expand=False)
             movSliderBox.pack_start(movSlider, expand=True)
-
+            
+            timeLabel = gtk.Label()
+            updateEstimate(None)
             movDia.add(movVbox)
             movVbox.pack_start(movLabel, expand=False)
             movVbox.pack_start(movSliderBox, expand=False)
+            movVbox.pack_start(timeLabel, expand=False)
             movVbox.pack_start(movFileButton, expand=False)
             movVbox.pack_start(movButton, expand=False)
             movButton.connect("clicked", movGen)
@@ -250,7 +269,6 @@ class Main:
                 self.pipeline.set_state(gst.STATE_PLAYING)
                 takeBut.set_sensitive(True)
             self.win.show_all()
-            
 
         #Interface
         self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)
