@@ -111,7 +111,7 @@ class Main:
             movLabel = gtk.Label(_("Here you can create a video made up of all your photos. \n\nJust choose a save location and hit 'create'.\n\nRemember, the path must end in '.mp4'.\n"))
             movFileButton = gtk.Button(label=_("Choose a location"))
             movButton = gtk.Button(label=_("Create"))
-            
+
             def updateEstimate(slider):
                 photosList = glob.glob(os.path.expanduser("~/.photostory/photos/") + "*.png")
                 photosList = sorted(photosList)
@@ -129,7 +129,7 @@ class Main:
             movSlider.set_digits(0)
             movSliderBox.pack_start(movSliderLabel, expand=False)
             movSliderBox.pack_start(movSlider, expand=True)
-            
+
             timeLabel = gtk.Label()
             updateEstimate(None)
             movDia.add(movVbox)
@@ -203,7 +203,7 @@ class Main:
                 takeBut.set_label(_("Photo taken for this day."))
                 takeBut.set_sensitive(False)
                 deleteBut.set_sensitive(True)
-            else: 
+            else:
                 if date == self.todayDate:
                     takeBut.set_label("Take today's photo")
                     if self.cameraStatus != gst.STATE_CHANGE_FAILURE:
@@ -219,7 +219,7 @@ class Main:
             vbox1.pack_start(self.pic)
             vbox1.pack_start(hbox2)
             vbox1.show_all()
-            
+
         def connectCamera(button):
             vbox2.remove(self.movie)
             self.movie = gtk.DrawingArea()
@@ -240,7 +240,7 @@ class Main:
             self.pipeline.add(self.camera, filt, self.xvimagesink)
             gst.element_link_many(self.camera, filt, self.xvimagesink)
             self.cameraStatus = self.pipeline.set_state(gst.STATE_PLAYING)
-            
+
             if self.cameraStatus == gst.STATE_CHANGE_FAILURE:#Check if there actually is a camera connected
                 vbox2.remove(self.movie)
                 self.movie = gtk.VBox(homogeneous=False, spacing=3)
@@ -249,7 +249,7 @@ class Main:
                 noCameraLabel.set_markup(_("<span size='32000'>No Camera\nConnected</span>"));
                 connectBut = gtk.Button("Connect Camera")
                 connectBut.connect("clicked", connectCamera)
-                
+
                 self.movie.pack_start(gtk.Label(), expand=True) #Empty Space
                 self.movie.pack_start(noCameraLabel, expand=False)
                 self.movie.pack_start(connectBut, expand=False)
@@ -278,7 +278,7 @@ class Main:
         self.movie.set_size_request(320, 240)
         hbox = gtk.HBox(homogeneous=False, spacing=3)
         vbox1 = gtk.VBox(homogeneous=False)
-        vbox2 = gtk.VBox(homogeneous = False)   
+        vbox2 = gtk.VBox(homogeneous = False)
         filmBut = gtk.Button(label=_("Create Film"))
         filmBut.connect("clicked", movify)
         deleteBut = gtk.Button(label=_("Delete Photo"))
