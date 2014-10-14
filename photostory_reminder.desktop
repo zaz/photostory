@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Photostory Reminder
+Comment=Reminds you to take a photo for Photostory if one hasn't already been taken for this day.
+Exec=sh -c "sleep 10; photostory_reminder"
+Icon=photostory
+Terminal=false
+Categories=AudioVideo;Video
+X-GNOME-Autostart-enabled=true
